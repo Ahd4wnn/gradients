@@ -150,3 +150,29 @@ test("an element larger than the GPU limit still renders", async ({ page }) => {
   expect(out.height).toBeGreaterThan(150);
   expect(out.note).toBe(false);
 });
+
+const WAVE_2 = ["holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt"];
+
+test("new layers survive the ends of their ranges", async ({ page }) => {
+  const errors = await open(page);
+  for (const def of allLayers.filter((d) => WAVE_2.includes(d.id))) {
+    for (const end of ["min", "max"] as const) {
+      const params: Record<string, number> = {};
+      for (const c of def.controls) if (c.type === "range") params[c.key] = c[end];
+      // alone, reading black below it: must export without throwing
+      expect((await probe(page, recipeOf(layer(def.id, params)), 96, 96)).w, `${def.id} alone at ${end}`).toBe(96);
+      // over a mesh: a NaN reaches the canvas as black, so a blacked-out frame shows up as a single colour
+      expect((await probe(page, recipeOf(layer("mesh"), layer(def.id, params)), 96, 96)).distinct, `${def.id} over mesh at ${end}`).toBeGreaterThan(1);
+    }
+  }
+  // one colour where one is allowed
+  expect((await probe(page, recipeOf(layer("mesh"), layer("beams", { colors: ["#ffffff"] })), 96, 96)).distinct).toBeGreaterThan(1);
+  expect(errors).toEqual([]);
+});
+
+test("heavy stack exports at 4K", async ({ page }) => {
+  await open(page);
+  const out = await probe(page, recipeOf(layer("mesh"), layer("chrome", { tint: 0.8 }), layer("frosted-glass"), layer("tiled-glass"), layer("holo-foil", { amount: 0.4 }), layer("grain")), 3840, 2160);
+  expect([out.w, out.h]).toEqual([3840, 2160]);
+  expect(out.distinct).toBeGreaterThan(1);
+});

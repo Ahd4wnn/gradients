@@ -9,7 +9,7 @@ import { encodeRecipe } from "@/lib/recipe";
 
 const HERO = { ...PRESETS[3].recipe, speed: 1 }; // Violet Dusk, moving
 const STEPS = [
-  ["Pick a gradient", "Twelve tuned starting points: mesh, grain, glass, halftone and dither."],
+  ["Pick a gradient", `${PRESETS.length} starting points: mesh, grain, glass, chrome, foil, halftone and more.`],
   ["Make it yours", "Stack up to six layers in the studio. The link is the recipe, so sharing is copying the URL."],
   ["Paste one line", "A script tag and one element. No framework, no build step. Or export a PNG up to 4K."],
 ];

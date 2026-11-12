@@ -107,8 +107,18 @@ No other file needs to change: the studio builds its controls from `controls`, a
 | `grain` | Grain | texture | amount, grain size, mode (film or edge), monochrome. |
 | `halftone` | Halftone dots | texture | paper colour, dot spacing, screen angle, softness, light dots. |
 | `dither` | Dither | texture | pixel size, colour levels, pattern (bayer4, bayer8, noise). |
+| `holo-foil` | Holographic foil | surface | amount, scale, colour cycles, pastel, flow speed. |
+| `chrome` | Liquid chrome | surface | scale, depth, reflections, rainbow edge, colour from below, flow speed. |
+| `satin` | Satin folds | surface | folds, amount, twist, angle, flow speed. |
+| `prism` | Prism streaks | surface | streaks, angle, width, length, rainbow, brightness. Adds light to what is below. |
+| `beams` | Light beams | surface | light colours (1–3), source x and y, rays, reach, brightness, flow speed. Adds light. |
+| `shapes` | Blurred shapes | base | colours (2–6, first is the background), shapes, size, blur, shape (circle, sparkle, ring), motion. |
+| `rings` | Rings and arcs | base | colours (2–6), centre x and y, rings, fade, stretch. |
+| `frosted-glass` | Frosted glass | surface | glass tint, blur, frost, milkiness. |
+| `tiled-glass` | Tiled glass | surface | tiles, tile offset, lens, bevel, angle. |
+| `ribbons` | Wave ribbons | distort | height, waves, twist, angle, flow speed. |
+| `melt` | Melt | distort | amount, columns, jaggedness, angle, flow speed. |
 
 Still to build, from the spec's catalogue:
 
-- Plan written, code prototyped (`docs/superpowers/plans/2026-11-12-gradient-studio-wave-2.md`): holographic foil, liquid chrome, satin folds, prism streaks, light beams, frosted glass, tiled glass, blurred shapes, rings and arcs, wave ribbons, melt.
-- No plan yet: thermal contour, line screen, gradient bars, layered waves, retro stripes and sunbursts.
+No plan yet: thermal contour, line screen, gradient bars, layered waves, retro stripes and sunbursts.

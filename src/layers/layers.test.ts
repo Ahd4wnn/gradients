@@ -38,7 +38,7 @@ describe.each(allLayers)("layer $id", (def) => {
   });
 });
 
-test("registry has the eight wave 1 layers and ignores prototype keys", () => {
-  expect(allLayers.map((l) => l.id)).toEqual(["linear", "radial", "mesh", "warp", "fluted-glass", "grain", "halftone", "dither"]);
+test("registry lists every layer in menu order and ignores prototype keys", () => {
+  expect(allLayers.map((l) => l.id)).toEqual(["linear","radial","mesh","warp","fluted-glass","grain","halftone","dither","holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt"]);
   for (const bad of ["constructor", "__proto__", "toString", "nope", 7, null, undefined]) expect(getLayer(bad)).toBeUndefined();
 });

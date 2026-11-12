@@ -51,16 +51,29 @@ const probe = (page: Page, recipe: Recipe, w: number, h: number) =>
         run = same ? run + 1 : 1;
         if (run > maxRun) maxRun = run;
       }
-      return { w: bmp.width, h: bmp.height, distinct: seen.size, hash, maxRun };
+      // largest jump in the blue channel's row average between neighbouring rows: a staircase means banding
+      let maxStep = 0;
+      let prev = -1;
+      for (let y = 0; y < bmp.height; y++) {
+        let sum = 0;
+        for (let x = 2; x < row; x += 4) sum += d[y * row + x];
+        const mean = sum / bmp.width;
+        if (prev >= 0) maxStep = Math.max(maxStep, Math.abs(mean - prev));
+        prev = mean;
+      }
+      return { w: bmp.width, h: bmp.height, distinct: seen.size, hash, maxRun, maxStep };
     },
     { recipe, w, h },
   );
 
 test("every layer compiles and draws", async ({ page }) => {
   const errors = await open(page);
+  const plain = await probe(page, recipeOf(layer("mesh")), 128, 128);
   for (const def of allLayers) {
     const out = await probe(page, recipeOf(layer("mesh"), layer(def.id)), 128, 128);
     expect(out.distinct, def.id).toBeGreaterThan(1);
+    // a layer that silently failed would leave the mesh untouched (mesh over mesh repaints, so skip base layers)
+    if (def.kind !== "base") expect(out.hash, def.id).not.toBe(plain.hash);
   }
   expect(errors).toEqual([]);
 });
@@ -87,6 +100,8 @@ test("no banding in a smooth dark gradient", async ({ page }) => {
   // 16 brightness levels over 1024 rows: without the output noise this bands every ~64 rows
   const out = await probe(page, recipeOf(layer("linear", { colors: ["#000000", "#10101c"] })), 512, 1024);
   expect(out.maxRun).toBeLessThan(8);
+  // 8-bit intermediate targets would step by about 1.0 at each band edge; a true ramp moves about 0.03 per row
+  expect(out.maxStep).toBeLessThan(0.4);
 });
 
 test("oversize export is refused with the largest workable size", async ({ page }) => {
@@ -112,9 +127,26 @@ test("embed survives abuse", async ({ page }) => {
     el.removeAttribute("recipe");
     await new Promise((r) => setTimeout(r, 300));
     const canvas = el.shadowRoot!.querySelector("canvas")!;
-    return [canvas.width, canvas.height];
+    return [canvas.width / devicePixelRatio, canvas.height / devicePixelRatio];
   });
-  expect(size[0]).toBeGreaterThan(0);
-  expect(size[1]).toBeGreaterThan(0);
+  expect(size).toEqual([300, 200]); // a canvas that never rendered would still be the default 300x150
   expect(errors).toEqual([]);
+});
+
+test("an element larger than the GPU limit still renders", async ({ page }) => {
+  await open(page);
+  const out = await page.evaluate(async () => {
+    const el = document.createElement("gradient-f");
+    el.style.cssText = "display:block;width:50px;height:40000px";
+    document.body.append(el);
+    await new Promise((r) => setTimeout(r, 400));
+    const canvas = el.shadowRoot!.querySelector("canvas")!;
+    const gl = document.createElement("canvas").getContext("webgl2")!;
+    const result = { height: canvas.height, max: gl.getParameter(gl.MAX_TEXTURE_SIZE) as number, note: !!el.shadowRoot!.querySelector("p") };
+    el.remove();
+    return result;
+  });
+  expect(out.height).toBeLessThanOrEqual(out.max);
+  expect(out.height).toBeGreaterThan(150);
+  expect(out.note).toBe(false);
 });

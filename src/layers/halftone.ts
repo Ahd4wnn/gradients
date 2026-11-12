@@ -25,7 +25,8 @@ vec4 layer(vec2 uv) {
   float m = uInvert > 0.5 ? luma(src) : 1.0 - luma(src);
   float r = sqrt(clamp(m, 0.0, 1.0)) * 0.72;
   float edge = uSoft + 1.0 / pitch;
-  float cover = 1.0 - smoothstep(r - edge, r + edge, length(fract(g) - 0.5));
+  // fade dots out as they shrink to nothing, otherwise pure highlights keep a faint speck
+  float cover = (1.0 - smoothstep(r - edge, r + edge, length(fract(g) - 0.5))) * smoothstep(0.0, edge, r);
   return vec4(mix(uColors[0], src, cover), 1.0);
 }`,
 };

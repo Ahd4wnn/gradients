@@ -43,3 +43,16 @@ test("a broken share link still opens the studio", async ({ page }) => {
   await expect(page.locator("gradient-f")).toBeVisible();
   await expect(page.getByLabel("Add layer")).toBeEnabled();
 });
+
+test("moving a layer with the keyboard keeps focus on that layer", async ({ page }) => {
+  await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`); // Blue Mesh: mesh, warp, grain
+  await page.getByRole("button", { name: "Move Grain up" }).focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter");
+  await expect.poll(() => recipeInUrl(page.url()).layers.map((l) => l.type)).toEqual(["grain", "mesh", "warp"]);
+  // at the top the up button is disabled, so focus moves to the same row's down button
+  await expect(page.getByRole("button", { name: "Move Grain down" })).toBeFocused();
+  await page.getByRole("button", { name: "Delete Liquid swirl" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Mesh blur", exact: true })).toBeFocused();
+});

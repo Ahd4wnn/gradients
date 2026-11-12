@@ -8,6 +8,7 @@ void main() {
 
 const COMMON = `#version 300 es
 precision highp float;
+precision highp sampler2D; // samplers default to lowp, which would throw away the 16-bit targets on some phones
 uniform sampler2D uPrev;
 uniform vec2 uRes;
 uniform float uTime;

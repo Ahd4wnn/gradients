@@ -84,24 +84,31 @@ function define() {
     #resize() {
       if (!this.#renderer) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const w = Math.round(this.clientWidth * dpr);
-      const h = Math.round(this.clientHeight * dpr);
+      let w = Math.round(this.clientWidth * dpr);
+      let h = Math.round(this.clientHeight * dpr);
       if (!w || !h) return; // hidden or collapsed: draw once it has a size
-      this.#renderer.resize(w, h);
-      this.#schedule();
+      // a very tall or wide element can exceed the GPU's texture limit: draw smaller and let CSS stretch it
+      const fit = Math.min(1, this.#renderer.maxSize / Math.max(w, h));
+      w = Math.max(1, Math.floor(w * fit));
+      h = Math.max(1, Math.floor(h * fit));
+      if (!this.#renderer.resize(w, h)) return this.#fallback();
+      // resizing clears the canvas; draw now, before the browser paints, so resizing never flashes black
+      this.#draw(performance.now());
     }
 
     #schedule() {
       cancelAnimationFrame(this.#raf);
       if (!this.#renderer || !this.#visible) return;
-      this.#raf = requestAnimationFrame((now) => {
-        const renderer = this.#renderer;
-        if (!renderer) return;
-        this.#start ||= now;
-        const animate = this.#recipe.speed !== 0 && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-        renderer.render(this.#recipe, animate ? now - this.#start : 0);
-        if (animate) this.#schedule();
-      });
+      this.#raf = requestAnimationFrame((now) => this.#draw(now));
+    }
+
+    #draw(now: number) {
+      const renderer = this.#renderer;
+      if (!renderer) return;
+      this.#start ||= now;
+      const animate = this.#recipe.speed !== 0 && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+      renderer.render(this.#recipe, animate ? now - this.#start : 0);
+      if (animate) this.#schedule();
     }
   }
 

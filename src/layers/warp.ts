@@ -15,11 +15,12 @@ export const warp: LayerDef = {
   fragment: `
 uniform float uAmount, uScale, uDetail, uFlow;
 vec4 layer(vec2 uv) {
-  vec2 p = uv * vec2(uRes.x / uRes.y, 1.0) * uScale;
+  vec2 asp = vec2(uRes.x / uRes.y, 1.0);
+  vec2 p = uv * asp * uScale;
   int o = int(uDetail);
   float t = uTime * uFlow * 0.1;
   vec2 q = vec2(fbm(p + vec2(0.0, t), o), fbm(p + vec2(5.2, 1.3 - t), o));
   vec2 r = vec2(fbm(p + 3.0 * q + vec2(1.7, 9.2), o), fbm(p + 3.0 * q + vec2(8.3, 2.8), o));
-  return vec4(texture(uPrev, uv + uAmount * r).rgb, 1.0);
+  return vec4(texture(uPrev, uv + uAmount * r / asp).rgb, 1.0);
 }`,
 };

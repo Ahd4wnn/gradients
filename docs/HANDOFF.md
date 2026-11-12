@@ -32,6 +32,8 @@ Three sub-projects, in order:
 | `docs/superpowers/plans/2026-11-12-gradient-studio-wave-1.md` | Plan for the first eight types. **Done.** |
 | `docs/superpowers/plans/2026-11-12-gradient-studio-wave-2.md` | Plan for the next eleven types, with shader code that has been compiled and rendered. **Not started.** |
 | `docs/superpowers/plans/assets/wave-2-reference.jpg` | Contact sheet of what those eleven types looked like when prototyped. |
+| `docs/superpowers/plans/2026-11-13-cursor-effects.md` | Plan for opt-in cursor effects (liquid push, spotlight, colours follow). Shaders prototyped; the cursor tracking is not. **Not started.** |
+| `docs/superpowers/plans/assets/cursor-effects-reference.jpg` | Each effect at rest and with a cursor, from the prototype. |
 | `docs/research-part-2.md` | Competitor and Figma research; a prioritised list of studio features and extra layers. |
 
 ## State of the code

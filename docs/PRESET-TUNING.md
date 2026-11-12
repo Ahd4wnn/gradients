@@ -73,24 +73,14 @@ Things that make a gradient look cheap, and that the strongest pins avoided:
 - Texture so heavy it hides the colour.
 - Perfect symmetry and dead-centre placement.
 
-## Where each draft stands
+## Where each preset stands
 
-Judged from the gallery at thumbnail size on 2026-11-12. Treat these as starting points, not verdicts; look at the full-size renders.
+First tuning pass done 2026-11-13 from contact sheets at 640×360. **None are owner-approved yet.**
 
-| Preset | Layers | Assessment |
-|---|---|---|
-| Deep Horizon | linear, grain | Close to the target. Could use a thinner bright band at the bottom. |
-| Peach Aura | radial, grain (edge) | Good. Centre is dead-centre; try moving it. |
-| Blue Mesh | mesh, warp, grain | Good. Has its dark anchor. |
-| Violet Dusk | mesh, grain | **Grain far too heavy** (amount 0.22, size 2). Try amount near 0.1 and size 1.5. |
-| Ember | linear, warp, grain | Reads as flat horizontal bands. Try more warp, or a bend, or a different seed. |
-| Pastel Wash | mesh, grain | On target. |
-| Reeded Rose | mesh, fluted-glass, grain | Right half is one flat colour, so the glass has nothing to refract there. Needs more contrast behind the glass or a different seed. |
-| Forest Flute | linear, warp, fluted-glass, grain | Good. The strongest of the glass presets. |
-| Thermal Swirl | mesh, warp | Good shape. The orange area is flat; try a fourth colour or more warp detail. |
-| Blueprint Dots | mesh, halftone | Dots are too small to read as dots (spacing 9). Try 16 to 24, and a base with more light-to-dark range. |
-| Mono Dither | linear, warp, dither | Good at 100%. |
-| Sunset Dither | radial, dither | Good. |
+- **Tuned this pass:** Deep Horizon, Peach Aura, Violet Dusk, Ember, Reeded Rose, Thermal Swirl, Blueprint Dots, Pearl Foil, Liquid Chrome, Chrome Tide.
+- **Added this pass:** Dark Opal (chrome with foil multiplied over it, on black), Frosted Aurora.
+- **Unchanged, judged acceptable:** the other eighteen.
+- **Weakest remaining:** Liquid Chrome and Chrome Tide read as glowing ribbons on black, with less depth than 3D-rendered references; more depth needs shader work in `src/layers/chrome.ts`, not preset values. Soft Orbs is very faint. Glass Blocks reads as pixel blocks more than glass.
 
 ## As more layer types arrive
 

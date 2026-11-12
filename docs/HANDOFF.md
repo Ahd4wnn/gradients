@@ -5,10 +5,10 @@ Written 2026-11-12, updated 2026-11-13 after the second batch of layers was buil
 ## Update, 2026-11-13
 
 - The working tree is clean. The earlier session's unfinished work was fixed (two type errors) and committed.
-- **19 of 25 layer types are built**, with 28 draft presets. The eleven-type plan is done, including its range-end and 4K tests.
+- **19 of 25 layer types are built**, with 30 presets (first tuning pass done 2026-11-13, none owner-approved). The eleven-type plan is done, including its range-end and 4K tests.
 - Checks: 97 unit tests, 15 browser tests, lint, type-check and production build all pass.
 - The sections "Uncommitted, in the working tree", "Check results" and "Do this first" below describe the state before this update and are kept for history.
-- **Next: tune all 28 presets with the owner** (`docs/PRESET-TUNING.md`), then the last five types, then the half-built studio features (opacity and blend controls, draggable points).
+- **Next: owner review of the 30 presets** (`docs/PRESET-TUNING.md`), then the last five types, then the half-built studio features (opacity and blend controls, draggable points).
 
 ## What this project is
 

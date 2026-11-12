@@ -14,7 +14,12 @@ describe.each(allLayers)("layer $id", (def) => {
         expect(v).toBeLessThanOrEqual(c.max);
       } else if (c.type === "select") expect(c.options).toContain(v);
       else if (c.type === "toggle") expect(typeof v).toBe("boolean");
-      else {
+      else if (c.type === "points") {
+        const points = v as number[];
+        expect(points.length % 2).toBe(0);
+        expect(points.length).toBeLessThanOrEqual(c.max * 2);
+        for (const n of points) expect(Number.isFinite(n)).toBe(true);
+      } else {
         const list = v as string[];
         expect(list.length).toBeGreaterThanOrEqual(c.min);
         expect(list.length).toBeLessThanOrEqual(c.max);

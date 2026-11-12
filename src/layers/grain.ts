@@ -14,11 +14,15 @@ export const grain: LayerDef = {
   uniforms: (p) => ({ uAmount: p.amount as number, uSize: p.size as number, uEdge: p.mode === "edge" ? 1 : 0, uMono: p.mono ? 1 : 0 }),
   fragment: `
 uniform float uAmount, uSize, uEdge, uMono;
+vec3 grainAt(vec2 g) { return vec3(hash21(g), hash21(g + 31.7), hash21(g + 73.1)) - 0.5; }
 vec4 layer(vec2 uv) {
   vec3 c = texture(uPrev, uv).rgb;
   float cell = max(1.0, uSize * uRes.y / 1080.0);
-  vec2 g = floor(gl_FragCoord.xy / cell) + floor(uTime * 12.0) * 7.0;
-  vec3 n = vec3(hash21(g), hash21(g + 31.7), hash21(g + 73.1)) - 0.5;
+  // Crossfade between grain frames so moving grain shimmers instead of flickering.
+  // The divisor keeps its strength constant mid-fade; at uTime 0 this is exactly one frame, so stills are unchanged.
+  float t = uTime * 12.0, f = fract(t);
+  vec2 g = floor(gl_FragCoord.xy / cell) + floor(t) * 7.0;
+  vec3 n = ((1.0 - f) * grainAt(g) + f * grainAt(g + 7.0)) / sqrt((1.0 - f) * (1.0 - f) + f * f);
   if (uMono > 0.5) n = vec3(n.x);
   float k = 1.0;
   if (uEdge > 0.5) {

@@ -1,7 +1,11 @@
 import { getLayer } from "../layers";
 import type { Control, Params, ParamValue } from "../layers/types";
 
-export type Layer = { type: string; params: Params; hidden?: boolean };
+/** How a layer is mixed over the result below it. The order is the shader's `uBlend` index. */
+export const BLENDS = ["normal", "screen", "multiply", "overlay", "add"] as const;
+export type Blend = (typeof BLENDS)[number];
+/** `opacity` and `blend` are stored only when they differ from 1 and "normal". */
+export type Layer = { type: string; params: Params; hidden?: boolean; opacity?: number; blend?: Blend };
 export type Recipe = { v: 1; seed: number; frame: number; speed: number; layers: Layer[] };
 
 export const MAX_LAYERS = 6;
@@ -31,6 +35,10 @@ function cleanParam(c: Control, v: unknown, fallback: ParamValue): ParamValue {
       const list = Array.isArray(v) ? v.filter((x): x is string => typeof x === "string" && HEX.test(x)).slice(0, c.max) : [];
       return list.length >= c.min ? list : structuredClone(fallback);
     }
+    case "points": {
+      const ok = Array.isArray(v) && v.length % 2 === 0 && v.length <= c.max * 2 && v.every((x) => typeof x === "number" && Number.isFinite(x));
+      return ok ? (v as number[]).map((x) => Math.min(1.5, Math.max(-0.5, x))) : structuredClone(fallback);
+    }
   }
 }
 
@@ -47,7 +55,12 @@ export function cleanRecipe(raw: unknown): Recipe {
     const given = (src.params && typeof src.params === "object" ? src.params : {}) as Record<string, unknown>;
     const params: Params = {};
     for (const c of def.controls) params[c.key] = cleanParam(c, Object.hasOwn(given, c.key) ? given[c.key] : undefined, def.defaults[c.key]);
-    layers.push(src.hidden === true ? { type: def.id, params, hidden: true } : { type: def.id, params });
+    const out: Layer = { type: def.id, params };
+    if (src.hidden === true) out.hidden = true;
+    const opacity = num(src.opacity, 0, 1, 1);
+    if (opacity < 1) out.opacity = opacity;
+    if (src.blend !== "normal" && (BLENDS as readonly unknown[]).includes(src.blend)) out.blend = src.blend as Blend;
+    layers.push(out);
   }
   if (!layers.length) return structuredClone(DEFAULT_RECIPE);
   return { v: 1, seed: Math.floor(num(r.seed, 0, 9999, 0)), frame: num(r.frame, 0, 3_600_000, 0), speed: num(r.speed, 0, 4, 0), layers };
@@ -74,7 +87,7 @@ export function cssFallback(r: Recipe): string {
 
 // Hand-picked palettes: Randomise only varies colour, placement and which layers are stacked,
 // never the tuned numeric defaults, so random results stay presentable.
-const PALETTES = [
+export const PALETTES = [
   ["#03061c", "#1a4fd6", "#a9d0ff"],
   ["#16141f", "#5b4bd6", "#c9a8e8"],
   ["#000000", "#3a0d0d", "#e52e1a", "#ff8a00"],
@@ -105,4 +118,25 @@ export function randomRecipe(seed: number): Recipe {
   const t = rnd();
   layers.push(layer(t < 0.7 ? "grain" : t < 0.85 ? "halftone" : "dither"));
   return { v: 1, seed: Math.floor(rnd() * 10000), frame: 0, speed: 0, layers };
+}
+
+/** The same recipe with every multi-colour list replaced by `colors` (trimmed to what each layer allows). */
+export function withColors(r: Recipe, colors: string[]): Recipe {
+  return {
+    ...r,
+    layers: r.layers.map((l) => {
+      const params = { ...l.params };
+      for (const c of getLayer(l.type)?.controls ?? []) if (c.type === "color-list" && c.min >= 2 && colors.length >= c.min) params[c.key] = colors.slice(0, c.max);
+      return { ...l, params };
+    }),
+  };
+}
+
+/** Randomise while keeping part of the current gradient: "colors" keeps the layers, "layout" keeps the colours. */
+export function reroll(r: Recipe, seed: number, what: "all" | "colors" | "layout"): Recipe {
+  if (what === "colors") return withColors(r, [...PALETTES[(seed >>> 0) % PALETTES.length]]);
+  const next = randomRecipe(seed);
+  if (what === "all") return next;
+  const mine = r.layers.map((l) => l.params.colors).find((c): c is string[] => Array.isArray(c) && c.length >= 2);
+  return mine ? withColors(next, mine) : next;
 }

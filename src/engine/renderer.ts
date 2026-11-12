@@ -1,6 +1,6 @@
 import { getLayer } from "../layers";
 import type { UniformValue } from "../layers/types";
-import type { Recipe } from "../lib/recipe";
+import { BLENDS, type Recipe } from "../lib/recipe";
 import { OUTPUT, VERT, wrap } from "./glsl/common";
 
 export type Renderer = {
@@ -118,7 +118,7 @@ export function createRenderer(canvas: HTMLCanvasElement, preserve = false): Ren
     render(recipe, timeMs) {
       const out = programFor("__output", OUTPUT);
       if (targets.length < 2 || !out) return;
-      const shared = { uPrev: 0, uRes: [w, h], uTime: (recipe.frame + timeMs * recipe.speed) / 1000, uSeed: recipe.seed };
+      const shared = { uPrev: 0, uRes: [w, h], uTime: (recipe.frame + timeMs * recipe.speed) / 1000, uSeed: recipe.seed, uOpacity: 1, uBlend: 0 };
       gl.viewport(0, 0, w, h);
       // a non-base layer placed first reads black
       let src = targets[1];
@@ -131,7 +131,7 @@ export function createRenderer(canvas: HTMLCanvasElement, preserve = false): Ren
         const p = def && programFor(def.id, def.fragment);
         if (!def || !p) continue;
         const dst = targets[pass++ % 2];
-        draw(p, src.tex, dst.fbo, { ...def.uniforms({ ...def.defaults, ...l.params }), ...shared });
+        draw(p, src.tex, dst.fbo, { ...def.uniforms({ ...def.defaults, ...l.params }), ...shared, uOpacity: l.opacity ?? 1, uBlend: Math.max(0, BLENDS.indexOf(l.blend ?? "normal")) });
         src = dst;
       }
       draw(out, src.tex, null, shared);

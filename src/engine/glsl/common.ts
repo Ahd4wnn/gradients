@@ -77,10 +77,29 @@ vec3 palette(float t) {
   return fromOklab(mix(toOklab(uColors[i]), toOklab(uColors[i + 1]), smoothstep(0.0, 1.0, x - float(i))));
 }
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+// per-layer compositing; the order matches BLENDS in lib/recipe.ts
+uniform float uOpacity;
+uniform int uBlend;
+vec3 blendMode(vec3 a, vec3 b) {
+  if (uBlend == 1) return 1.0 - (1.0 - a) * (1.0 - b);
+  if (uBlend == 2) return a * b;
+  if (uBlend == 3) return mix(2.0 * a * b, 1.0 - 2.0 * (1.0 - a) * (1.0 - b), step(0.5, a));
+  if (uBlend == 4) return a + b;
+  return b;
+}
 `;
 
 /** Full fragment source for a layer body that defines `vec4 layer(vec2 uv)`. */
-export const wrap = (body: string) => `${COMMON}\n${body}\nvoid main() { outColor = layer(vUv); }`;
+export const wrap = (body: string) => `${COMMON}\n${body}
+void main() {
+  vec4 c = layer(vUv);
+  // the common case (opaque, normal) skips the extra read and stays bit-identical to an unblended layer
+  if (uOpacity < 1.0 || uBlend != 0) {
+    vec3 below = texture(uPrev, vUv).rgb;
+    c.rgb = mix(below, blendMode(below, c.rgb), uOpacity);
+  }
+  outColor = c;
+}`;
 
 /** Final pass: triangular noise of ±1/255 hides 8-bit banding. */
 export const OUTPUT = `

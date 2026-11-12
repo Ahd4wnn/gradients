@@ -33,4 +33,6 @@ export const PRESETS = [
   make("Slow Melt", 34, [layer("linear", { colors: ["#000000", "#ff3d00", "#ffb199", "#f4e9e4"] }), layer("melt", { amount: 0.35, jag: 0, frequency: 6 })]),
   make("Dark Opal", 46, [layer("linear", { colors: ["#000000", "#05050a"] }), layer("chrome", { tint: 0, scale: 0.4, depth: 3, streaks: 0.6, iris: 1 }), { ...layer("holo-foil", { amount: 1, pastel: 0.4, cycles: 4, scale: 0.5 }), blend: "multiply" }, layer("frosted-glass", { blur: 0.02, frost: 0.4, milk: 0 }), layer("grain", { amount: 0.07 })]),
   make("Frosted Aurora", 45, [layer("mesh", { colors: ["#eaf2ff", "#8fb4ff", "#ffc4e0", "#ffffff"] }), layer("holo-foil", { amount: 0.35, pastel: 0.7 }), layer("frosted-glass", { blur: 0.08, milk: 0.2 }), layer("grain", { amount: 0.04 })]),
+  make("Liquid Touch", 3, [layer("mesh", { follow: 0.7 }), layer("warp", { amount: 0.12 }), layer("cursor-push"), layer("grain", { amount: 0.08 })]),
+  make("Spot Lit", 1, [layer("linear", { colors: ["#e6f1ff", "#3a74ff", "#0a1f8a", "#03061c", "#000000", "#000000"], bend: 0.5, spread: 0.9 }), layer("cursor-light"), layer("grain", { amount: 0.08 })]),
 ];

@@ -13,6 +13,10 @@ uniform sampler2D uPrev;
 uniform vec2 uRes;
 uniform float uTime;
 uniform float uSeed;
+// cursor, in the same space as vUv (0..1, y up); all three are at rest (hover 0) for stills, thumbnails and exports
+uniform vec2 uPointer;
+uniform vec2 uPointerVel;
+uniform float uHover;
 uniform vec3 uColors[6];
 uniform int uColorCount;
 in vec2 vUv;

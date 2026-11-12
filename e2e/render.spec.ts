@@ -5,7 +5,7 @@ import { layer, type Recipe } from "../src/lib/recipe";
 
 declare global {
   interface Window {
-    GradientF: { exportPng(r: Recipe, w: number, h: number): Promise<Blob> };
+    GradientF: { exportPng(r: Recipe, w: number, h: number, pointer?: { x: number; y: number; vx: number; vy: number; hover: number }): Promise<Blob> };
   }
 }
 
@@ -73,7 +73,8 @@ test("every layer compiles and draws", async ({ page }) => {
     const out = await probe(page, recipeOf(layer("mesh"), layer(def.id)), 128, 128);
     expect(out.distinct, def.id).toBeGreaterThan(1);
     // a layer that silently failed would leave the mesh untouched (mesh over mesh repaints, so skip base layers)
-    if (def.kind !== "base") expect(out.hash, def.id).not.toBe(plain.hash);
+    // cursor layers are meant to change nothing without a cursor; "each cursor effect responds to a cursor" covers them
+    if (def.kind !== "base" && def.kind !== "cursor") expect(out.hash, def.id).not.toBe(plain.hash);
   }
   expect(errors).toEqual([]);
 });
@@ -175,4 +176,37 @@ test("heavy stack exports at 4K", async ({ page }) => {
   const out = await probe(page, recipeOf(layer("mesh"), layer("chrome", { tint: 0.8 }), layer("frosted-glass"), layer("tiled-glass"), layer("holo-foil", { amount: 0.4 }), layer("grain")), 3840, 2160);
   expect([out.w, out.h]).toEqual([3840, 2160]);
   expect(out.distinct).toBeGreaterThan(1);
+});
+
+const HOVER = { x: 0.35, y: 0.6, vx: 0.6, vy: 0.1, hover: 1 };
+const hashAt = (page: Page, recipe: Recipe, pointer?: typeof HOVER) =>
+  page.evaluate(
+    async ({ recipe, pointer }) => {
+      const d = new Uint8Array(await (await window.GradientF.exportPng(recipe, 192, 108, pointer)).arrayBuffer());
+      let h = 0;
+      for (const v of d) h = (Math.imul(h, 31) + v) | 0;
+      return h;
+    },
+    { recipe, pointer },
+  );
+
+test("with no cursor, cursor effects change nothing", async ({ page }) => {
+  await open(page);
+  const plain = recipeOf(layer("mesh"), layer("warp"), layer("radial", { cy: 0.2 }), layer("grain"));
+  const withEffects = recipeOf(layer("mesh", { follow: 1 }), layer("warp"), layer("radial", { cy: 0.2, follow: 1 }), layer("cursor-push"), layer("cursor-light"), layer("grain"));
+  // the radial repaints the frame, so compare it separately from the mesh
+  expect(await hashAt(page, withEffects)).toBe(await hashAt(page, plain));
+  expect(await hashAt(page, recipeOf(layer("mesh", { follow: 1 }), layer("cursor-push"), layer("cursor-light")))).toBe(await hashAt(page, recipeOf(layer("mesh"))));
+});
+
+test("each cursor effect responds to a cursor", async ({ page }) => {
+  await open(page);
+  for (const recipe of [
+    recipeOf(layer("mesh", { follow: 1 })),
+    recipeOf(layer("radial", { follow: 1 })),
+    recipeOf(layer("rings"), layer("cursor-push")),
+    recipeOf(layer("mesh"), layer("cursor-light")),
+    recipeOf(layer("cursor-light")), // alone, over black
+  ])
+    expect(await hashAt(page, recipe, HOVER), recipe.layers.map((l) => l.type).join("+")).not.toBe(await hashAt(page, recipe));
 });

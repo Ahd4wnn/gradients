@@ -75,5 +75,6 @@ The dropdown menu is the one place a shadow is allowed: it floats above the page
 ## Rules
 
 - Never colour the chrome. Emphasis = white fill or size.
+- Cursor effects belong to a gradient's recipe (the hero and two presets use them). The site's own chrome still has no hover colour.
 - One italic serif phrase per headline, never more.
 - Every interactive element keeps a visible focus ring and its accessible name — the e2e suite selects by them.

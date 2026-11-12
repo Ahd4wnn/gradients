@@ -29,4 +29,6 @@ A layered WebGL2 gradient generator: a gallery (`/`), a studio editor (`/studio?
 
 **Consumers of the renderer**: `src/embed/gradient-f.ts` (custom element with shadow DOM, resize/visibility observers, context-loss recovery, CSS fallback via `cssFallback`) — the studio's `GradientCanvas` is just a `<gradient-f>`, so all live-canvas lifecycle lives in the element; `Thumb` (gallery thumbnails, drawn at on-screen pixel size to avoid dither moiré); and `exportPng` (offscreen render, refuses sizes beyond the GPU limit). The embed also exposes `window.GradientF.exportPng`, which `scripts/render.mjs` and the e2e tests use.
 
+**Cursor effects** are opt-in per recipe. Every shader can read `uPointer`, `uPointerVel` and `uHover`; a layer declares `interactive(params)` when it uses them (`cursor-push`, `cursor-light`, and `mesh`/`radial` when `follow` > 0), and `usesPointer(recipe)` tells `<gradient-f>` whether to track the cursor at all. Tracking and smoothing live in `src/embed/gradient-f.ts`. Invariant, enforced by an e2e test: with no cursor (`uHover` 0) every effect returns its input bit for bit, so thumbnails, exports and old links never change.
+
 Design spec and implementation plan: `docs/superpowers/specs/` and `docs/superpowers/plans/`.

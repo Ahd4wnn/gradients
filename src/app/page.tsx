@@ -5,9 +5,15 @@ import { Thumb } from "@/components/Thumb";
 import { allLayers } from "@/layers";
 import { caption } from "@/lib/caption";
 import { PRESETS } from "@/lib/presets";
-import { encodeRecipe } from "@/lib/recipe";
+import { encodeRecipe, layer } from "@/lib/recipe";
 
-const HERO = { ...PRESETS[3].recipe, speed: 1 }; // Violet Dusk, moving
+// Violet Dusk, moving, and the one place on the site that reacts to the cursor without being asked
+const DUSK = PRESETS.find((p) => p.name === "Violet Dusk")!.recipe;
+const HERO = {
+  ...DUSK,
+  speed: 1,
+  layers: [{ ...DUSK.layers[0], params: { ...DUSK.layers[0].params, follow: 0.6 } }, layer("cursor-push", { strength: 0.05 }), ...DUSK.layers.slice(1)],
+};
 const STEPS = [
   ["Pick a gradient", `${PRESETS.length} starting points: mesh, grain, glass, chrome, foil, halftone and more.`],
   ["Make it yours", "Stack up to six layers in the studio. The link is the recipe, so sharing is copying the URL."],

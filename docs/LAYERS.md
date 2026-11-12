@@ -26,6 +26,7 @@ type LayerDef = {
 | `surface` | Yes, through glass or a material. | fluted-glass |
 | `recolor` | Yes, same pixel, new colour. | none yet |
 | `texture` | Yes, adds a print or film texture on top. | grain, halftone, dither |
+| `cursor` | Yes, and reacts to the cursor. Must set `interactive`. | cursor-push, cursor-light |
 
 `kind` only groups layers in the add-layer menu. Any layer may follow any other. A non-base layer placed first receives black.
 
@@ -52,6 +53,7 @@ type LayerDef = {
 | `uniform float uTime` | Seconds. Fixed for stills, advances when the recipe's `speed` is above 0. |
 | `uniform float uSeed` | The recipe seed. |
 | `uniform vec3 uColors[6]`, `uniform int uColorCount` | The layer's colour list, as sRGB 0..1. Filled by `colorUniforms()`. |
+| `uniform vec2 uPointer`, `uniform vec2 uPointerVel`, `uniform float uHover` | Smoothed cursor position (0..1, y up), its velocity, and presence (0 away, 1 over the gradient). All at rest for stills. |
 | `uniform float uOpacity`, `uniform int uBlend` | Per-layer compositing. Applied for you after `layer()` returns; do not use them. |
 | `float hash21(vec2)` | Random 0..1, already offset by the seed. |
 | `float gnoise(vec2)` | Gradient noise, about −0.7..0.7. |
@@ -81,6 +83,7 @@ These come from the spec's quality rules. Breaking one is a bug even if the imag
 6. **A still must be stable.** At a fixed `uTime` the same recipe must render the same pixels every time. The browser tests check this for every preset.
 7. **No undefined maths.** No `pow` of a negative, no division that can reach zero across the control's range, no `sqrt` of a negative. Clamp first.
 8. **Return opaque colour.** `vec4(rgb, 1.0)`. Values slightly outside 0..1 are fine between layers; the final pass clamps.
+10. **A cursor effect must return its input exactly when `uHover` is 0.** Write it as the input plus a term multiplied by `uHover`, not as a formula that only roughly equals the input. The test "with no cursor, cursor effects change nothing" compares hashes.
 9. **Antialias hard edges.** Use `smoothstep` over about one pixel (`1.0 / uRes.y` in UV units, or `fwidth`), not `step`.
 
 ## Checklist for a new layer
@@ -118,6 +121,10 @@ No other file needs to change: the studio builds its controls from `controls`, a
 | `tiled-glass` | Tiled glass | surface | tiles, tile offset, lens, bevel, angle. |
 | `ribbons` | Wave ribbons | distort | height, waves, twist, angle, flow speed. |
 | `melt` | Melt | distort | amount, columns, jaggedness, angle, flow speed. |
+| `cursor-push` | Liquid push | cursor | push, reach, drag. |
+| `cursor-light` | Spotlight | cursor | light colour, brightness, size. |
+
+`mesh` and `radial` also have a "Follow cursor" control (0 by default).
 
 Still to build, from the spec's catalogue:
 

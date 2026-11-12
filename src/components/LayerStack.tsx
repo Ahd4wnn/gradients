@@ -9,6 +9,7 @@ const KINDS = [
   ["distort", "Distortion"],
   ["surface", "Glass and material"],
   ["texture", "Texture"],
+  ["cursor", "Cursor effects"],
 ] as const;
 
 const btn = "icon-btn";

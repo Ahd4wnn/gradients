@@ -433,7 +433,7 @@ async function mount(page: Page, recipe: string) {
   await page.waitForTimeout(400);
 }
 const shot = (page: Page) => page.locator("#g").screenshot();
-const settle = (page: Page) => page.waitForTimeout(1500); // longer than the 600 ms fade-out
+const settle = (page: Page) => page.waitForTimeout(1500); // the fade-out settles in about 1.2 s
 
 test("cursor effect works under overlaid content", async ({ page }) => {
   await mount(page, LIT);
@@ -613,8 +613,8 @@ Add this method:
         p.vy -= p.vy * ease(0.1);
       }
       const target = inside ? 1 : 0;
-      p.hover += (target - p.hover) * ease(inside ? 0.2 : 0.6);
-      const settled = Math.abs(target - p.hover) < 0.002 && Math.hypot(p.vx, p.vy) < 0.002 && gap < 0.0005;
+      p.hover += (target - p.hover) * ease(inside ? 0.2 : 0.25);
+      const settled = Math.abs(target - p.hover) < 0.01 && Math.hypot(p.vx, p.vy) < 0.002 && gap < 0.0005;
       if (settled) {
         // land exactly, so a settled frame at rest is bit-identical to one with no cursor effect
         p.hover = target;

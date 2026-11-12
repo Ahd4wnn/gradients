@@ -1,4 +1,5 @@
-import { createRenderer, type Renderer } from "../engine/renderer";
+import { createRenderer, REST, type Pointer, type Renderer } from "../engine/renderer";
+import { usesPointer } from "../layers";
 import { exportPng } from "../lib/exportPng";
 import { cssFallback, decodeRecipe, type Recipe } from "../lib/recipe";
 
@@ -19,6 +20,25 @@ function define() {
     #raf = 0;
     #start = 0;
     #visible = true;
+    // raw cursor in viewport pixels (null = away), the smoothed state the shaders see, and the last frame time
+    #client: { x: number; y: number } | null = null;
+    #pointer: Pointer = { ...REST };
+    #lastFrame = 0;
+    #tracking = false;
+    // The handlers only store or clear the position; all maths happens once per frame in #stepPointer.
+    #onMove = (e: PointerEvent) => {
+      this.#client = { x: e.clientX, y: e.clientY };
+      this.#schedule();
+    };
+    #onGone = () => {
+      this.#client = null;
+      this.#schedule();
+    };
+    // a finger lifting ends the hover; a mouse button releasing does not
+    #onUp = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") this.#onGone();
+    };
+    #onScroll = () => this.#schedule();
     #sizes = new ResizeObserver(() => this.#resize());
     #views = new IntersectionObserver((entries) => {
       this.#visible = entries[entries.length - 1].isIntersecting;
@@ -43,9 +63,11 @@ function define() {
       this.#init();
       this.#sizes.observe(this);
       this.#views.observe(this);
+      this.#track(usesPointer(this.#recipe));
     }
 
     disconnectedCallback() {
+      this.#track(false);
       this.#sizes.disconnect();
       this.#views.disconnect();
       cancelAnimationFrame(this.#raf);
@@ -57,6 +79,7 @@ function define() {
 
     attributeChangedCallback(_name: string, _old: string | null, value: string | null) {
       this.#recipe = decodeRecipe(value);
+      if (this.#canvas) this.#track(usesPointer(this.#recipe));
       if (this.#canvas && !this.#renderer) this.#fallback();
       this.#schedule();
     }
@@ -102,13 +125,79 @@ function define() {
       this.#raf = requestAnimationFrame((now) => this.#draw(now));
     }
 
+    /** Listen for the cursor only while this gradient uses it. On `window`, because text and buttons often sit on top of a gradient and would swallow events aimed at the element. */
+    #track(on: boolean) {
+      on &&= !matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (on === this.#tracking) return;
+      this.#tracking = on;
+      const act = on ? "addEventListener" : "removeEventListener";
+      window[act]("pointermove", this.#onMove as EventListener, { passive: true });
+      window[act]("pointerup", this.#onUp as EventListener, { passive: true });
+      window[act]("pointercancel", this.#onGone);
+      window[act]("blur", this.#onGone);
+      window[act]("scroll", this.#onScroll, { passive: true, capture: true });
+      document.documentElement[act]("pointerleave", this.#onGone);
+      if (!on) {
+        this.#client = null;
+        this.#pointer = { ...REST };
+      }
+    }
+
+    /** Advance the smoothed cursor by `dt` seconds. Returns true while it is still moving or fading. */
+    #stepPointer(dt: number): boolean {
+      const p = this.#pointer;
+      const rect = this.getBoundingClientRect();
+      const c = this.#client;
+      const inside = !!c && rect.width > 0 && rect.height > 0 && c.x >= rect.left && c.x <= rect.right && c.y >= rect.top && c.y <= rect.bottom;
+      const ease = (seconds: number) => 1 - Math.exp(-dt / seconds);
+      let gap = 0;
+      if (inside && c) {
+        const tx = (c.x - rect.left) / rect.width;
+        const ty = 1 - (c.y - rect.top) / rect.height;
+        // arriving from rest: start at the cursor, so the effect does not sweep in from where it last was
+        if (p.hover < 0.01) {
+          p.x = tx;
+          p.y = ty;
+          p.vx = p.vy = 0;
+        }
+        const nx = p.x + (tx - p.x) * ease(0.12);
+        const ny = p.y + (ty - p.y) * ease(0.12);
+        if (dt > 0) {
+          const clamp = (v: number) => Math.max(-3, Math.min(3, v));
+          p.vx += (clamp((nx - p.x) / dt) - p.vx) * ease(0.1);
+          p.vy += (clamp((ny - p.y) / dt) - p.vy) * ease(0.1);
+        }
+        p.x = nx;
+        p.y = ny;
+        gap = Math.hypot(tx - p.x, ty - p.y);
+      } else {
+        // keep the last position while fading out; only the velocity and strength decay
+        p.vx -= p.vx * ease(0.1);
+        p.vy -= p.vy * ease(0.1);
+      }
+      const target = inside ? 1 : 0;
+      p.hover += (target - p.hover) * ease(inside ? 0.2 : 0.25);
+      const settled = Math.abs(target - p.hover) < 0.01 && Math.hypot(p.vx, p.vy) < 0.002 && gap < 0.0005;
+      if (settled) {
+        // land exactly, so a settled frame at rest is bit-identical to one with no cursor effect
+        p.hover = target;
+        p.vx = p.vy = 0;
+      }
+      return !settled;
+    }
+
     #draw(now: number) {
       const renderer = this.#renderer;
       if (!renderer) return;
       this.#start ||= now;
       const animate = this.#recipe.speed !== 0 && !matchMedia("(prefers-reduced-motion: reduce)").matches;
-      renderer.render(this.#recipe, animate ? now - this.#start : 0);
-      if (animate) this.#schedule();
+      // the first frame after a pause has no previous time: treat it as an instant
+      const dt = this.#lastFrame ? Math.min(0.1, (now - this.#lastFrame) / 1000) : 0;
+      this.#lastFrame = now;
+      const moving = this.#tracking && this.#stepPointer(dt);
+      renderer.render(this.#recipe, animate ? now - this.#start : 0, this.#tracking ? this.#pointer : undefined);
+      if (animate || moving) this.#schedule();
+      else this.#lastFrame = 0;
     }
   }
 

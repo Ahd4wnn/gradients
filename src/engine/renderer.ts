@@ -3,8 +3,12 @@ import type { UniformValue } from "../layers/types";
 import { BLENDS, type Recipe } from "../lib/recipe";
 import { OUTPUT, VERT, wrap } from "./glsl/common";
 
+/** Smoothed cursor state in uv space (0..1, y up). `hover` is 0 when the cursor is away. */
+export type Pointer = { x: number; y: number; vx: number; vy: number; hover: number };
+export const REST: Pointer = { x: 0.5, y: 0.5, vx: 0, vy: 0, hover: 0 };
+
 export type Renderer = {
-  render(recipe: Recipe, timeMs: number): void;
+  render(recipe: Recipe, timeMs: number, pointer?: Pointer): void;
   /** false if the GPU could not allocate targets of this size */
   resize(width: number, height: number): boolean;
   dispose(): void;
@@ -115,10 +119,10 @@ export function createRenderer(canvas: HTMLCanvasElement, preserve = false): Ren
       return true;
     },
 
-    render(recipe, timeMs) {
+    render(recipe, timeMs, pointer = REST) {
       const out = programFor("__output", OUTPUT);
       if (targets.length < 2 || !out) return;
-      const shared = { uPrev: 0, uRes: [w, h], uTime: (recipe.frame + timeMs * recipe.speed) / 1000, uSeed: recipe.seed, uOpacity: 1, uBlend: 0 };
+      const shared = { uPrev: 0, uRes: [w, h], uTime: (recipe.frame + timeMs * recipe.speed) / 1000, uSeed: recipe.seed, uOpacity: 1, uBlend: 0, uPointer: [pointer.x, pointer.y], uPointerVel: [pointer.vx, pointer.vy], uHover: pointer.hover };
       gl.viewport(0, 0, w, h);
       // a non-base layer placed first reads black
       let src = targets[1];

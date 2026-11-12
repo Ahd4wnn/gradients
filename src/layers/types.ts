@@ -16,7 +16,9 @@ export type Handle = { x: number; y: number; label: string; color?: string };
 
 export type LayerDef = {
   id: string;
-  kind: "base" | "distort" | "surface" | "recolor" | "texture";
+  kind: "base" | "distort" | "surface" | "recolor" | "texture" | "cursor";
+  /** True when these params make the layer react to the cursor. Absent means never. */
+  interactive?(p: Params): boolean;
   label: string;
   fragment: string;
   defaults: Params;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { allLayers, getLayer } from "./index";
+import { allLayers, getLayer, usesPointer } from "./index";
 
 const HEX = /^#[0-9a-f]{6}$/i;
 
@@ -39,6 +39,20 @@ describe.each(allLayers)("layer $id", (def) => {
 });
 
 test("registry lists every layer in menu order and ignores prototype keys", () => {
-  expect(allLayers.map((l) => l.id)).toEqual(["linear","radial","mesh","warp","fluted-glass","grain","halftone","dither","holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt"]);
+  expect(allLayers.map((l) => l.id)).toEqual(["linear","radial","mesh","warp","fluted-glass","grain","halftone","dither","holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt","cursor-push","cursor-light"]);
   for (const bad of ["constructor", "__proto__", "toString", "nope", 7, null, undefined]) expect(getLayer(bad)).toBeUndefined();
+});
+
+test("usesPointer is false until a layer opts in", () => {
+  const base = { v: 1 as const, seed: 1, frame: 0, speed: 0 };
+  const mesh = { type: "mesh", params: {} };
+  expect(usesPointer({ ...base, layers: [mesh] })).toBe(false);
+  expect(usesPointer({ ...base, layers: [{ type: "nope", params: {} }] })).toBe(false);
+  expect(usesPointer({ ...base, layers: [mesh, { type: "cursor-light", params: {} }] })).toBe(true);
+  expect(usesPointer({ ...base, layers: [mesh, { type: "cursor-push", params: {}, hidden: true }] })).toBe(false);
+  expect(usesPointer({ ...base, layers: [{ type: "mesh", params: { follow: 0.5 } }] })).toBe(true);
+  expect(usesPointer({ ...base, layers: [{ type: "radial", params: { follow: 0 } }] })).toBe(false);
+  // nothing that existed before cursor effects reacts by default
+  const old = allLayers.filter((l) => l.kind !== "cursor").map((l) => ({ type: l.id, params: {} }));
+  expect(usesPointer({ ...base, layers: old })).toBe(false);
 });

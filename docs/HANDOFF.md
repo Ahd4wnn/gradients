@@ -8,7 +8,8 @@ Written 2026-11-12, updated 2026-11-13 after the second batch of layers was buil
 - **19 of 25 layer types are built**, with 30 presets (first tuning pass done 2026-11-13, none owner-approved). The eleven-type plan is done, including its range-end and 4K tests.
 - Checks: 97 unit tests, 15 browser tests, lint, type-check and production build all pass.
 - The sections "Uncommitted, in the working tree", "Check results" and "Do this first" below describe the state before this update and are kept for history.
-- **Next: owner review of the 30 presets** (`docs/PRESET-TUNING.md`), then the last five types, then the half-built studio features (opacity and blend controls, draggable points).
+- **Cursor effects are built** (2026-11-13, branch `cursor-effects`): liquid push, spotlight, and follow on mesh and aura. Opt-in per recipe; only the hero and the presets "Liquid Touch" and "Spot Lit" use them. Not checked on touch devices, Safari or Firefox.
+- **Next: owner review of the 32 presets** (`docs/PRESET-TUNING.md`), then the last five types, then the half-built studio features (opacity and blend controls, draggable points).
 
 ## What this project is
 
@@ -32,7 +33,7 @@ Three sub-projects, in order:
 | `docs/superpowers/plans/2026-11-12-gradient-studio-wave-1.md` | Plan for the first eight types. **Done.** |
 | `docs/superpowers/plans/2026-11-12-gradient-studio-wave-2.md` | Plan for the next eleven types, with shader code that has been compiled and rendered. **Not started.** |
 | `docs/superpowers/plans/assets/wave-2-reference.jpg` | Contact sheet of what those eleven types looked like when prototyped. |
-| `docs/superpowers/plans/2026-11-13-cursor-effects.md` | Plan for opt-in cursor effects (liquid push, spotlight, colours follow). Shaders prototyped; the cursor tracking is not. **Not started.** |
+| `docs/superpowers/plans/2026-11-13-cursor-effects.md` | Plan for opt-in cursor effects (liquid push, spotlight, colours follow). **Done.** |
 | `docs/superpowers/plans/assets/cursor-effects-reference.jpg` | Each effect at rest and with a cursor, from the prototype. |
 | `docs/research-part-2.md` | Competitor and Figma research; a prioritised list of studio features and extra layers. |
 

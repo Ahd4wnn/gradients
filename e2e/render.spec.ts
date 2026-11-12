@@ -1,0 +1,120 @@
+import { expect, test, type Page } from "@playwright/test";
+import { allLayers } from "../src/layers";
+import { PRESETS } from "../src/lib/presets";
+import { layer, type Recipe } from "../src/lib/recipe";
+
+declare global {
+  interface Window {
+    GradientF: { exportPng(r: Recipe, w: number, h: number): Promise<Blob> };
+  }
+}
+
+const recipeOf = (...layers: Recipe["layers"]): Recipe => ({ v: 1, seed: 1, frame: 0, speed: 0, layers });
+
+async function open(page: Page) {
+  const errors: string[] = [];
+  // only the engine's own errors: the dev server and deliberate context loss add unrelated console noise
+  page.on("console", (m) => m.type() === "error" && m.text().includes("[gradient-f]") && errors.push(m.text()));
+  page.on("pageerror", (e) => errors.push(String(e)));
+  await page.goto("/");
+  await page.addScriptTag({ url: "/embed.js", type: "module" });
+  await page.waitForFunction(() => !!window.GradientF);
+  return errors;
+}
+
+/** Export in the page and measure the PNG there. */
+const probe = (page: Page, recipe: Recipe, w: number, h: number) =>
+  page.evaluate(
+    async ({ recipe, w, h }) => {
+      const bmp = await createImageBitmap(await window.GradientF.exportPng(recipe, w, h));
+      const ctx = new OffscreenCanvas(bmp.width, bmp.height).getContext("2d")!;
+      ctx.drawImage(bmp, 0, 0);
+      const d = ctx.getImageData(0, 0, bmp.width, bmp.height).data;
+      let hash = 0;
+      const seen = new Set<number>();
+      for (let i = 0; i < d.length; i += 4) {
+        const v = (d[i] << 16) | (d[i + 1] << 8) | d[i + 2];
+        hash = (Math.imul(hash, 31) + v) | 0;
+        if (seen.size < 64) seen.add(v);
+      }
+      // longest run of consecutive byte-identical rows: long runs are visible bands
+      const row = bmp.width * 4;
+      let run = 1;
+      let maxRun = 1;
+      for (let y = 1; y < bmp.height; y++) {
+        let same = true;
+        for (let x = 0; x < row; x++)
+          if (d[y * row + x] !== d[(y - 1) * row + x]) {
+            same = false;
+            break;
+          }
+        run = same ? run + 1 : 1;
+        if (run > maxRun) maxRun = run;
+      }
+      return { w: bmp.width, h: bmp.height, distinct: seen.size, hash, maxRun };
+    },
+    { recipe, w, h },
+  );
+
+test("every layer compiles and draws", async ({ page }) => {
+  const errors = await open(page);
+  for (const def of allLayers) {
+    const out = await probe(page, recipeOf(layer("mesh"), layer(def.id)), 128, 128);
+    expect(out.distinct, def.id).toBeGreaterThan(1);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("presets render, and render the same twice", async ({ page }) => {
+  await open(page);
+  for (const { name, recipe } of PRESETS) {
+    const a = await probe(page, recipe, 256, 144);
+    const b = await probe(page, recipe, 256, 144);
+    expect(a.distinct, name).toBeGreaterThan(1);
+    expect(a.hash, name).toBe(b.hash);
+  }
+});
+
+test("three-layer 4K export has the requested size", async ({ page }) => {
+  await open(page);
+  const out = await probe(page, recipeOf(layer("mesh"), layer("warp"), layer("grain")), 3840, 2160);
+  expect([out.w, out.h]).toEqual([3840, 2160]);
+  expect(out.distinct).toBeGreaterThan(1);
+});
+
+test("no banding in a smooth dark gradient", async ({ page }) => {
+  await open(page);
+  // 16 brightness levels over 1024 rows: without the output noise this bands every ~64 rows
+  const out = await probe(page, recipeOf(layer("linear", { colors: ["#000000", "#10101c"] })), 512, 1024);
+  expect(out.maxRun).toBeLessThan(8);
+});
+
+test("oversize export is refused with the largest workable size", async ({ page }) => {
+  await open(page);
+  const message = await page.evaluate(
+    (recipe) => window.GradientF.exportPng(recipe, 1_000_000, 16).then(() => "resolved", (e: Error) => e.message),
+    recipeOf(layer("mesh")),
+  );
+  expect(message).toMatch(/up to \d+px/);
+});
+
+test("embed survives abuse", async ({ page }) => {
+  const errors = await open(page);
+  await page.addScriptTag({ url: "/embed.js?again", type: "module" }); // loaded twice
+  const size = await page.evaluate(async () => {
+    const el = document.createElement("gradient-f");
+    el.style.cssText = "display:none;width:300px;height:200px";
+    el.setAttribute("recipe", "%%% not a recipe");
+    document.body.append(el); // zero size while hidden
+    el.remove();
+    document.body.append(el); // reconnect
+    el.style.display = "block";
+    el.removeAttribute("recipe");
+    await new Promise((r) => setTimeout(r, 300));
+    const canvas = el.shadowRoot!.querySelector("canvas")!;
+    return [canvas.width, canvas.height];
+  });
+  expect(size[0]).toBeGreaterThan(0);
+  expect(size[1]).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

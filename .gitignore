@@ -44,3 +44,5 @@ public/embed.js
 test-results
 playwright-report
 .superpowers
+
+/out/

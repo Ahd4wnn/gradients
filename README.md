@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gradient Studio
 
-## Getting Started
+A website for making high-quality gradients for app and website design: layered mesh, grain, glass, halftone and dither effects, exported as PNG up to 4K or as a live embed.
 
-First, run the development server:
+## Run it
+
+```bash
+npm install
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The gallery is at `/`, the studio at `/studio`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Check it
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+```bash
+npm run e2e
+```
 
-To learn more about Next.js, take a look at the following resources:
+`npm test` runs the unit tests. `npm run e2e` runs the browser tests; it needs no graphics card.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Look at the output
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+With the dev server running:
 
-## Deploy on Vercel
+```bash
+node scripts/render.mjs
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This writes every gallery preset to `out/presets/` as a PNG.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Embed a gradient
+
+Copy the snippet from the studio. It is one script tag and one element:
+
+```html
+<script type="module" src="https://YOUR-SITE/embed.js"></script>
+<gradient-f recipe="…" style="display:block;width:100%;height:100vh"></gradient-f>
+```
+
+## Documentation
+
+| File | Read it for |
+|---|---|
+| [docs/HANDOFF.md](docs/HANDOFF.md) | Current state and what to do next. Start here. |
+| [CLAUDE.md](CLAUDE.md) | Commands and architecture. |
+| [DESIGN.md](DESIGN.md) | The site's visual design. |
+| [docs/LAYERS.md](docs/LAYERS.md) | Writing a new gradient layer. |
+| [docs/PRESET-TUNING.md](docs/PRESET-TUNING.md) | Tuning gallery presets. |
+| [docs/superpowers/specs/](docs/superpowers/specs/) | The approved design spec. |
+| [docs/superpowers/plans/](docs/superpowers/plans/) | Implementation plans. |
+| [docs/research-part-2.md](docs/research-part-2.md) | Competitor research and feature ideas. |

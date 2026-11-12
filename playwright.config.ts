@@ -5,9 +5,10 @@ export default defineConfig({
   timeout: 180_000,
   workers: 1,
   use: {
-    baseURL: "http://localhost:3100",
+    baseURL: "http://localhost:3000",
     // software WebGL so the suite also runs on machines with no GPU
     launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] },
   },
-  webServer: { command: "npm run build:embed && npx next dev -p 3100", url: "http://localhost:3100", reuseExistingServer: false, timeout: 180_000 },
+  // Next allows one dev server per folder, so reuse one that is already running.
+  webServer: { command: "npm run dev", url: "http://localhost:3000", reuseExistingServer: true, timeout: 180_000 },
 });

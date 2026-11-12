@@ -11,7 +11,7 @@
     "prebuild": "npm run build:embed",
     "build:embed": "esbuild src/embed/gradient-f.ts --bundle --format=esm --minify --outfile=public/embed.js",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "npm run build:embed && playwright test"
   },
   "dependencies": {
     "next": "16.4.6",

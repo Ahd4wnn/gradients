@@ -1,30 +1,71 @@
 "use client";
-import type { LayerDef, Params, ParamValue } from "@/layers/types";
+import { useState } from "react";
+import type { Control, LayerDef, Params, ParamValue } from "@/layers/types";
+import { ColorPicker } from "./ColorPicker";
+import { Icon } from "./Icon";
+import { Slider } from "./Slider";
 
 const row = "flex items-center justify-between gap-3 text-sm";
 
+function ColorList({ c, cols, onChange }: { c: Extract<Control, { type: "color-list" }>; cols: string[]; onChange: (next: string[]) => void }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const i = open !== null && open < cols.length ? open : null;
+  return (
+    <div role="group" aria-label={c.label} className="space-y-2 text-sm">
+      <span>{c.label}</span>
+      <div className="flex flex-wrap items-center gap-2">
+        {cols.map((col, k) => (
+          <button key={k} type="button" aria-label={`${c.label} ${k + 1}`} aria-expanded={i === k} className="swatch" style={{ background: col }} onClick={() => setOpen(i === k ? null : k)} />
+        ))}
+        {cols.length < c.max && (
+          <button
+            type="button"
+            aria-label="Add colour"
+            className="icon-btn bg-white/10"
+            onClick={() => {
+              onChange([...cols, cols[cols.length - 1]]);
+              setOpen(cols.length);
+            }}
+          >
+            <Icon name="plus" />
+          </button>
+        )}
+      </div>
+      {i !== null && (
+        <div className="space-y-3 rounded-2xl bg-white/5 p-3">
+          <ColorPicker key={i} value={cols[i]} onChange={(hex) => onChange(cols.map((x, k) => (k === i ? hex : x)))} />
+          {cols.length > c.min && (
+            <button
+              type="button"
+              aria-label={`Remove ${c.label} ${i + 1}`}
+              className="btn w-full"
+              onClick={() => {
+                onChange(cols.filter((_, k) => k !== i));
+                setOpen(null);
+              }}
+            >
+              Remove this colour
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Controls({ def, params, onChange }: { def: LayerDef; params: Params; onChange: (key: string, value: ParamValue) => void }) {
   return (
-    <fieldset className="space-y-3">
-      <legend className="mb-2 text-xs uppercase tracking-widest text-white/50">{def.label}</legend>
+    <fieldset className="space-y-4">
+      <legend className="mb-4 text-lg tracking-tight">{def.label}</legend>
       {def.controls.map((c) => {
         const id = `${def.id}-${c.key}`;
         const v = params[c.key];
-        if (c.type === "range")
-          return (
-            <div key={c.key}>
-              <label htmlFor={id} className={row}>
-                {c.label}
-                <output className="tabular-nums text-white/60">{v as number}</output>
-              </label>
-              <input id={id} type="range" className="w-full" min={c.min} max={c.max} step={c.step} value={v as number} onChange={(e) => onChange(c.key, Number(e.target.value))} />
-            </div>
-          );
+        if (c.type === "range") return <Slider key={c.key} id={id} label={c.label} value={v as number} min={c.min} max={c.max} step={c.step} onChange={(n) => onChange(c.key, n)} />;
         if (c.type === "select")
           return (
             <label key={c.key} className={row}>
               {c.label}
-              <select className="rounded border border-white/20 bg-neutral-900 p-1" value={v as string} onChange={(e) => onChange(c.key, e.target.value)}>
+              <select className="select" value={v as string} onChange={(e) => onChange(c.key, e.target.value)}>
                 {c.options.map((o) => <option key={o}>{o}</option>)}
               </select>
             </label>
@@ -33,28 +74,12 @@ export function Controls({ def, params, onChange }: { def: LayerDef; params: Par
           return (
             <label key={c.key} className={row}>
               {c.label}
-              <input type="checkbox" checked={v as boolean} onChange={(e) => onChange(c.key, e.target.checked)} />
+              <input type="checkbox" className="switch" checked={v as boolean} onChange={(e) => onChange(c.key, e.target.checked)} />
             </label>
           );
-        const cols = v as string[];
-        return (
-          <div key={c.key} role="group" aria-label={c.label} className="space-y-1 text-sm">
-            <span>{c.label}</span>
-            <div className="flex flex-wrap items-center gap-2">
-              {cols.map((col, i) => (
-                <span key={i} className="flex items-center">
-                  <input type="color" aria-label={`${c.label} ${i + 1}`} value={col} onChange={(e) => onChange(c.key, cols.map((x, k) => (k === i ? e.target.value : x)))} />
-                  {cols.length > c.min && (
-                    <button type="button" className="px-1 hover:bg-white/10" aria-label={`Remove ${c.label} ${i + 1}`} onClick={() => onChange(c.key, cols.filter((_, k) => k !== i))}>−</button>
-                  )}
-                </span>
-              ))}
-              {cols.length < c.max && (
-                <button type="button" className="rounded border border-white/20 px-2 py-1 hover:bg-white/10" onClick={() => onChange(c.key, [...cols, cols[cols.length - 1]])}>Add colour</button>
-              )}
-            </div>
-          </div>
-        );
+        if (c.type === "points") return null; // placed by dragging on the preview, so there is nothing to show in the panel
+        // keyed by layer so an open picker closes when another layer is selected
+        return <ColorList key={id} c={c} cols={v as string[]} onChange={(next) => onChange(c.key, next)} />;
       })}
     </fieldset>
   );

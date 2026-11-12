@@ -2,15 +2,17 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controls } from "@/components/Controls";
+import { caption } from "@/lib/caption";
 import { GradientCanvas } from "@/components/GradientCanvas";
 import { LayerStack } from "@/components/LayerStack";
+import { Slider } from "@/components/Slider";
 import { getLayer } from "@/layers";
 import { toHtml, toReact } from "@/lib/embed";
 import { exportPng } from "@/lib/exportPng";
 import { decodeRecipe, encodeRecipe, randomRecipe, type Recipe } from "@/lib/recipe";
 
 const SIZES = ["1280x720", "1920x1080", "2560x1440", "3840x2160", "1080x1080", "2160x2160", "1080x1920", "2160x3840"];
-const btn = "rounded-md border border-white/20 px-3 py-2 text-sm hover:bg-white/10 disabled:opacity-40";
+const btn = "btn";
 
 export default function Studio() {
   const [recipe, setRecipe] = useState<Recipe>(() => decodeRecipe(new URLSearchParams(location.search).get("g")));
@@ -36,7 +38,6 @@ export default function Studio() {
     );
 
   async function download() {
-    const [w, h] = size.split("x").map(Number);
     setBusy(true);
     setStatus("Rendering…");
     try {
@@ -54,48 +55,53 @@ export default function Studio() {
     }
   }
 
+  const [w, h] = size.split("x").map(Number);
+  const card = "space-y-6 rounded-3xl bg-white/5 p-5 lg:overflow-y-auto";
+
   return (
-    <main className="grid min-h-screen bg-neutral-950 text-white lg:grid-cols-[1fr_22rem]">
-      <div className="flex items-center justify-center p-4 lg:p-8">
-        <GradientCanvas recipe={recipe} className="aspect-video w-full max-w-5xl rounded-xl shadow-2xl" />
-      </div>
-      <aside className="space-y-6 border-t border-white/10 p-4 lg:max-h-screen lg:overflow-y-auto lg:border-l lg:border-t-0">
-        <header className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Studio</h1>
-          <Link href="/" className="text-sm underline underline-offset-4">Gallery</Link>
-        </header>
+    <main className="flex min-h-screen flex-col gap-3 bg-ink p-3 text-white lg:h-screen">
+      <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <Link href="/" className={`${btn} justify-self-start`}>← gradients by f13s</Link>
+        <h1 className="text-center font-medium">
+          Studio <span className="hidden font-normal text-white/50 sm:inline">· {caption(recipe)}</span>
+        </h1>
+        <button type="button" className={`${btn} justify-self-end`} onClick={() => copy(`${location.origin}/studio?g=${encodeRecipe(recipe)}`, "Link")}>Copy link</button>
+      </header>
 
-        <LayerStack layers={recipe.layers} selected={index} onSelect={setSelected} onChange={(layers) => setRecipe({ ...recipe, layers })} />
-
-        <Controls
-          def={def}
-          params={current.params}
-          onChange={(key, value) => setRecipe({ ...recipe, layers: recipe.layers.map((l, i) => (i === index ? { ...l, params: { ...l.params, [key]: value } } : l)) })}
-        />
-
-        <section aria-label="Motion" className="space-y-2">
-          <label htmlFor="speed" className="flex justify-between text-sm">
-            Animation speed <output className="tabular-nums text-white/60">{recipe.speed}</output>
-          </label>
-          <input id="speed" type="range" className="w-full" min={0} max={4} step={0.05} value={recipe.speed} onChange={(e) => setRecipe({ ...recipe, speed: Number(e.target.value) })} />
-        </section>
-
-        <section aria-label="Actions" className="space-y-3">
-          <div className="flex flex-wrap gap-2">
+      <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[19rem_1fr_21rem]">
+        <div className="flex min-h-0 flex-col gap-3 lg:col-start-2 lg:row-start-1">
+          {/* The preview takes the export size's shape, as large as fits: what you see is what you export. */}
+          <div className="flex h-[50vh] min-h-0 items-center justify-center [container-type:size] lg:h-auto lg:flex-1">
+            <GradientCanvas recipe={recipe} className="rounded-3xl" style={{ aspectRatio: `${w} / ${h}`, width: `min(100cqw, 100cqh * ${w} / ${h})` }} />
+          </div>
+          <section aria-label="Actions" className="flex flex-wrap items-center justify-center gap-2">
             <button type="button" className={btn} onClick={() => { setRecipe(randomRecipe(Math.floor(Math.random() * 1e9))); setSelected(0); }}>Randomise</button>
-            <button type="button" className={btn} onClick={() => copy(`${location.origin}/studio?g=${encodeRecipe(recipe)}`, "Link")}>Copy link</button>
             <button type="button" className={btn} onClick={() => copy(toHtml(recipe, location.origin), "HTML")}>Copy HTML</button>
             <button type="button" className={btn} onClick={() => copy(toReact(recipe, location.origin), "React code")}>Copy React</button>
-          </div>
-          <div className="flex gap-2">
-            <select aria-label="Export size" className="flex-1 rounded-md border border-white/20 bg-neutral-900 p-2 text-sm" value={size} onChange={(e) => setSize(e.target.value)}>
+            <select aria-label="Export size" className="select" value={size} onChange={(e) => setSize(e.target.value)}>
               {SIZES.map((s) => <option key={s} value={s}>{s.replace("x", " × ")}</option>)}
             </select>
-            <button type="button" className={btn} disabled={busy} onClick={download}>Export PNG</button>
-          </div>
-          <p role="status" aria-live="polite" className="min-h-5 text-sm text-white/70">{status}</p>
-        </section>
-      </aside>
+            <button type="button" className="btn btn-primary" disabled={busy} onClick={download}>Export PNG</button>
+          </section>
+          <p role="status" aria-live="polite" className="min-h-5 text-center text-sm text-white/70">{status}</p>
+        </div>
+
+        <aside aria-label="Layers and motion" className={`${card} lg:col-start-1 lg:row-start-1`}>
+          <LayerStack layers={recipe.layers} selected={index} onSelect={setSelected} onChange={(layers) => setRecipe({ ...recipe, layers })} />
+
+          <section aria-label="Motion">
+            <Slider id="speed" label="Animation speed" value={recipe.speed} min={0} max={4} step={0.05} onChange={(speed) => setRecipe({ ...recipe, speed })} />
+          </section>
+        </aside>
+
+        <aside aria-label="Layer controls" className={`${card} lg:col-start-3 lg:row-start-1`}>
+          <Controls
+            def={def}
+            params={current.params}
+            onChange={(key, value) => setRecipe({ ...recipe, layers: recipe.layers.map((l, i) => (i === index ? { ...l, params: { ...l.params, [key]: value } } : l)) })}
+          />
+        </aside>
+      </div>
     </main>
   );
 }

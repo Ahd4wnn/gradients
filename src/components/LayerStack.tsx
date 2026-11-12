@@ -1,6 +1,7 @@
 "use client";
 import { useLayoutEffect, useRef } from "react";
 import { allLayers, getLayer } from "@/layers";
+import { Icon } from "./Icon";
 import { layer as makeLayer, MAX_LAYERS, type Layer } from "@/lib/recipe";
 
 const KINDS = [
@@ -10,7 +11,7 @@ const KINDS = [
   ["texture", "Texture"],
 ] as const;
 
-const btn = "rounded px-2 py-1 text-sm hover:bg-white/10 disabled:opacity-30";
+const btn = "icon-btn";
 
 export function LayerStack({ layers, selected, onSelect, onChange }: { layers: Layer[]; selected: number; onSelect: (i: number) => void; onChange: (next: Layer[]) => void }) {
   const full = layers.length >= MAX_LAYERS;
@@ -38,21 +39,22 @@ export function LayerStack({ layers, selected, onSelect, onChange }: { layers: L
   };
   return (
     <section aria-label="Layers" className="space-y-2">
-      <h2 className="text-xs uppercase tracking-widest text-white/50">Layers, drawn top to bottom</h2>
+      <h2 className="text-lg tracking-tight">Layers <span className="text-sm text-white/50">drawn top to bottom</span></h2>
       <ol ref={list} className="space-y-1">
         {layers.map((l, i) => {
           const label = getLayer(l.type)!.label;
           return (
-            <li key={i} className={`flex items-center gap-1 rounded-md border px-1 ${i === selected ? "border-white/60 bg-white/10" : "border-white/10"}`}>
-              <button type="button" data-act="select" aria-pressed={i === selected} onClick={() => onSelect(i)} className={`flex-1 py-2 pl-2 text-left text-sm ${l.hidden ? "text-white/40 line-through" : ""}`}>
+            <li key={i} className={`flex items-center rounded-2xl p-1 transition-colors ${i === selected ? "bg-white/15" : "bg-white/5 hover:bg-white/10"}`}>
+              <span aria-hidden className="w-7 text-center text-sm tabular-nums text-white/40">{i + 1}</span>
+              <button type="button" data-act="select" aria-pressed={i === selected} onClick={() => onSelect(i)} className={`min-w-0 flex-1 truncate rounded-xl py-2 text-left text-sm ${l.hidden ? "text-white/40 line-through" : ""}`}>
                 {label}
               </button>
-              <label className="flex items-center px-1">
-                <input type="checkbox" checked={!l.hidden} onChange={() => onChange(layers.map((x, k) => (k !== i ? x : x.hidden ? { type: x.type, params: x.params } : { ...x, hidden: true })))} />
+              <label className="flex items-center">
+                <input type="checkbox" className="eye" checked={!l.hidden} onChange={() => onChange(layers.map((x, k) => (k !== i ? x : x.hidden ? { type: x.type, params: x.params } : { ...x, hidden: true })))} />
                 <span className="sr-only">Show {label}</span>
               </label>
-              <button type="button" className={btn} data-act="up" aria-label={`Move ${label} up`} disabled={i === 0} onClick={() => move(i, -1)}>↑</button>
-              <button type="button" className={btn} data-act="down" aria-label={`Move ${label} down`} disabled={i === layers.length - 1} onClick={() => move(i, 1)}>↓</button>
+              <button type="button" className={btn} data-act="up" aria-label={`Move ${label} up`} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" /></button>
+              <button type="button" className={btn} data-act="down" aria-label={`Move ${label} down`} disabled={i === layers.length - 1} onClick={() => move(i, 1)}><Icon name="down" /></button>
               <button
                 type="button"
                 className={btn}
@@ -64,7 +66,7 @@ export function LayerStack({ layers, selected, onSelect, onChange }: { layers: L
                   focusRow(Math.min(i, layers.length - 2), ["[data-act=select]"]);
                 }}
               >
-                ✕
+                <Icon name="close" />
               </button>
             </li>
           );
@@ -74,7 +76,7 @@ export function LayerStack({ layers, selected, onSelect, onChange }: { layers: L
         aria-label="Add layer"
         value=""
         disabled={full}
-        className="w-full rounded-md border border-white/20 bg-neutral-900 p-2 text-sm"
+        className="select w-full"
         onChange={(e) => {
           if (!e.target.value) return;
           onChange([...layers, makeLayer(e.target.value)]);

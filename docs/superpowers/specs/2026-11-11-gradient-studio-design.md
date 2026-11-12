@@ -107,7 +107,7 @@ placed first receives black as its input.
   `controls` is a list of `{ key, label, type: "color-list" | "range" |
   "select" | "toggle", min, max, step, options }`; the studio UI is generated
   from it. `layers/index.ts` is the registry.
-- **Shared GLSL** (`engine/glsl/common.glsl`, prepended to every shader):
+- **Shared GLSL** (`engine/glsl/common.ts`, prepended to every shader):
   seeded hash and simplex noise, sRGB ↔ OKLab conversion, palette sampling.
 
 ### Quality rules (what separates this from generic output)
@@ -130,7 +130,7 @@ placed first receives black as its input.
 | Unit | Does | Depends on |
 |---|---|---|
 | `engine/renderer.ts` | `createRenderer(canvas)` → `{ render(recipe, timeMs), resize(w, h), dispose() }`; compiles and caches layer programs, runs the passes | WebGL2, `layers` |
-| `engine/glsl/common.glsl` | Shared noise, colour and palette functions | — |
+| `engine/glsl/common.ts` | Shared noise, colour and palette functions, as a GLSL string (no bundler loader needed) | — |
 | `layers/*.ts` | One file per layer: shader, defaults, controls | `common.glsl` |
 | `layers/index.ts` | Registry of layers by id | `layers/*` |
 | `lib/recipe.ts` | `encodeRecipe`, `decodeRecipe` (validates and clamps every param against the registry; unknown layers are dropped; bad input returns the default recipe), `randomRecipe()` | registry metadata only |
@@ -159,9 +159,10 @@ importable without the shader source for that reason.
 ## Screens
 
 - **Gallery (`/`)**: about 50 approved presets (at least one per type, the
-  rest combinations) as live canvases, each linking
-  to `/studio?g=…`. Presets are a static array of recipes in the repo. Only
-  canvases in the viewport animate.
+  rest combinations) as still thumbnails, each linking to `/studio?g=…`.
+  Presets are a static array of recipes in the repo. Thumbnails are drawn by
+  one shared renderer and copied to 2D canvases, because browsers allow only
+  about 16 live WebGL canvases per page. The studio canvas is live.
 - **Studio (`/studio`)**: canvas on the left. On the right: the layer stack
   (add from a menu grouped by kind, drag or arrow-key reorder, hide, delete),
   the selected layer's controls, Randomise, Copy link, Export PNG, Copy code.

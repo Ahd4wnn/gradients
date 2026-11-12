@@ -71,10 +71,12 @@ it normally sits in the stack: `base` → `distort` → `surface` → `texture`.
 | 20 | Liquid chrome | surface | 3 |
 | 21 | Satin folds | surface | 3 |
 
-**This spec's implementation scope is the engine, the studio, and the eight
-wave 1 layers.** Waves 2 and 3 add layers only (one registry entry and one
-shader each) and get their own short plans. Liquid chrome is a shader
-approximation and will not match 3D-rendered references.
+**This spec's implementation scope is the engine, the studio, and all 25
+types.** The wave column is build order only: wave 1 proves the engine and
+studio end to end, then waves 2 and 3 add the remaining layers (one registry
+entry and one shader each). Nothing ships to the public until all three waves
+are in and every type has at least one approved preset. Liquid chrome is a
+shader approximation and will not match 3D-rendered references.
 
 ## The recipe
 
@@ -156,7 +158,8 @@ importable without the shader source for that reason.
 
 ## Screens
 
-- **Gallery (`/`)**: about 24 approved presets as live canvases, each linking
+- **Gallery (`/`)**: about 50 approved presets (at least one per type, the
+  rest combinations) as live canvases, each linking
   to `/studio?g=…`. Presets are a static array of recipes in the repo. Only
   canvases in the viewport animate.
 - **Studio (`/studio`)**: canvas on the left. On the right: the layer stack
@@ -206,7 +209,7 @@ Controls are native inputs with labels and are fully keyboard-operable.
 
 ## Out of scope
 
-Wave 2 and 3 layers, video export, photo upload, node-graph editing, AI
+Video export, photo upload, node-graph editing, AI
 generation, saved gradients, accounts, payments, the MCP server, an npm
 package.
 

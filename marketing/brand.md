@@ -42,6 +42,7 @@ None yet. Do not state user counts, revenue or testimonials until they are liste
 |---|---|---|---|
 | 1 | `video/01-phones.html` | Two phones with the same login screen: a default CSS gradient next to ours | rendered, not posted |
 | 2 | `video/02-stack.html` | One gradient built layer by layer: mesh, swirl, fluted glass, grain | rendered, not posted |
+| 3 | `video/03-slop.html` | "AI slop vs gradients by f13s": the same onboarding screen with the indigo-to-pink gradient AI tools default to, next to ours | rendered, not posted |
 
 ## Post log
 

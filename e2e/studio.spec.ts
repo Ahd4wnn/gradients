@@ -110,7 +110,7 @@ test("opacity and blend are saved per layer", async ({ page }) => {
 
 test("a palette recolours the gradient, and randomise can keep the layers", async ({ page }) => {
   await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`); // mesh, warp, grain
-  await page.getByRole("button", { name: "Palette 3" }).click();
+  await page.getByRole("button", { name: "Ember palette" }).click();
   await expect.poll(() => recipeInUrl(page.url()).layers[0].params.colors).toEqual(PALETTES[2]);
   await page.getByLabel("What to randomise").selectOption("colors");
   await page.getByRole("button", { name: "Randomise", exact: true }).click();

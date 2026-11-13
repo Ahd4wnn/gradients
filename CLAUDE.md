@@ -18,6 +18,7 @@ Next.js 16 (App Router, `cacheComponents`, Turbopack + Tailwind 4) — read `nod
 - `npm run e2e` — Playwright (`e2e/`), rebuilds the embed, reuses a running dev server (Next allows only one per folder). Runs WebGL on SwiftShader so no GPU is needed. One test: `npx playwright test e2e/render.spec.ts -g "name"`. Needs the database: `e2e/global-setup.ts` creates a paid test account (`e2e-paid@gradients.test`, fake purchase row, no Razorpay call) and every test runs signed in as it; `account.spec.ts` runs signed out and deletes the `e2e-new-*@gradients.test` accounts it creates.
 - `npm run build:embed` — esbuild bundle of `src/embed/gradient-f.ts` → `public/embed.js` (gitignored; rebuild after engine/layer changes before e2e or the render script)
 - `npm run lint` must be clean: the React rules reject reading or writing a ref during render.
+- `node scripts/video.mjs video/01-phones.html` — with the dev server running, renders a video scene to `out/video/01-phones.mp4`; add `--frames 0,3,9` for stills, `--from 4 --to 6` for a part.
 - `node scripts/render.mjs` — with the dev server running, renders every gallery preset to `out/presets/*.png` plus `out/gallery.png`; `node scripts/render.mjs <g> <name>` renders one studio `?g=` value. `SIZE=3840x2160` changes size. Use this to look at output without a browser.
 
 ## Architecture
@@ -53,5 +54,7 @@ The site's own look follows `DESIGN.md` (monochrome chrome, pill controls); reus
 - **Limit:** `MCP_MONTHLY_LIMIT` (500) gradients per account per UTC calendar month, counted in `mcp_usage` by one atomic statement (`takeMcpUse`). Only the two creating tools count, and only when they succeed. Plus 120 requests a minute per account, in memory.
 
 **Landing page** (`src/app/page.tsx`, server-rendered) animates with two libraries, both off under `prefers-reduced-motion`: Motion (`motion/react`) for the hero entrance, scroll reveals and the layer-name marquee (`components/anim/Motion.tsx`), and GSAP ScrollTrigger for scroll-linked effects (`components/anim/ScrollFx.tsx`; elements opt in with `data-fx="hero" | "hero-bg" | "hero-copy" | "card" | "drift"`). Rule: server HTML must show all content; animations may hide something only after hydration (see `Reveal`). `Thumb` draws only when it nears the viewport, because every draw stalls on a GPU readback.
+
+**Marketing and video.** Two project agents live in `.claude/agents/`: `marketing-expert` (positioning, X posts, the founder's personal brand; reads and updates `marketing/brand.md`) and `video-editor` (product videos). A video is one HTML scene in `video/`, rendered frame by frame by `node scripts/video.mjs video/<scene>.html` into `out/video/` (needs the dev server and ffmpeg; `--frames 0,3,9` writes stills to look at). Scenes animate with CSS keyframes only and use `<gradient-f data-preset="…" data-speed="…">`; the rules are in the video-editor agent file. Founder's rule: videos never mention the price, and end on gradients.f13s.com.
 
 Design spec and implementation plans: `docs/superpowers/specs/` and `docs/superpowers/plans/`. Competitor research behind the extra layers and studio features: `docs/research-part-2.md`.

@@ -2,7 +2,7 @@ import { allLayers, getLayer } from "../layers";
 import { caption } from "./caption";
 import { toHtml, toReact } from "./embed";
 import { PRESETS } from "./presets";
-import { BLENDS, cleanRecipe, decodeRecipe, encodeRecipe, MAX_LAYERS, PALETTES, randomRecipe, withColors, type Recipe } from "./recipe";
+import { BLENDS, cleanRecipe, decodeRecipe, encodeRecipe, MAX_LAYERS, PALETTE_NAMES, PALETTES, randomRecipe, withColors, type Recipe } from "./recipe";
 
 /** Gradients one account may create through the MCP server per calendar month. */
 export const MCP_MONTHLY_LIMIT = 500;
@@ -158,7 +158,7 @@ export function callTool(name: string, args: unknown, origin: string, random: ()
         MCP_GUIDE,
         "",
         `Blend modes: ${BLENDS.join(", ")}`,
-        `Built-in palettes (use one as colors): ${JSON.stringify(PALETTES)}`,
+        `Built-in palettes (use one as colors): ${JSON.stringify(Object.fromEntries(PALETTES.map((p, i) => [PALETTE_NAMES[i], p])))}`,
         "",
         "Layers:",
         JSON.stringify(allLayers.map((l) => ({ id: l.id, label: l.label, kind: l.kind, controls: l.controls.map((c) => ({ ...c, default: l.defaults[c.key] })) }))),

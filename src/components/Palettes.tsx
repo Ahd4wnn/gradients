@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { dominantColors } from "@/lib/extract";
-import { PALETTES } from "@/lib/recipe";
+import { PALETTE_NAMES, PALETTES } from "@/lib/recipe";
 import { Icon } from "./Icon";
 
 const KEY = "gf.palettes";
@@ -61,7 +61,7 @@ export function Palettes({ current, onApply, onStatus }: { current: string[] | u
     <section aria-label="Palettes" className="space-y-3">
       <h2 className="text-lg tracking-tight">Palettes <span className="text-sm text-white/50">recolour every layer</span></h2>
       <div className="grid grid-cols-4 gap-2">
-        {PALETTES.map((p, i) => <Swatch key={i} colors={p} label={`Palette ${i + 1}`} onClick={() => onApply([...p])} />)}
+        {PALETTES.map((p, i) => <Swatch key={i} colors={p} label={`${PALETTE_NAMES[i]} palette`} onClick={() => onApply([...p])} />)}
       </div>
       {saved.length > 0 && (
         <ul aria-label="Saved palettes" className="space-y-1.5">

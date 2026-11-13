@@ -26,7 +26,7 @@ test("the lists cover every preset and every layer", () => {
   expect(layers.find((l) => l.id === "grain")!.controls.find((c) => c.key === "amount")!.default).toBe(0.12);
   // every control of every layer is offered, including the mesh's pinned points
   for (const l of allLayers) expect(layers.find((x) => x.id === l.id)!.controls.map((c) => c.key)).toEqual(l.controls.map((c) => c.key));
-  expect(listing).toContain(JSON.stringify(PALETTES));
+  expect(listing).toContain(`"Midnight Aurora":${JSON.stringify(PALETTES[8])}`);
 });
 
 test("a preset by name gives that recipe, a studio link and both snippets", () => {

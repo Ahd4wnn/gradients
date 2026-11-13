@@ -87,6 +87,9 @@ export function cssFallback(r: Recipe): string {
 
 // Hand-picked palettes: Randomise only varies colour, placement and which layers are stacked,
 // never the tuned numeric defaults, so random results stay presentable.
+// Each runs dark to light (or pale to tinted), so a fade reads as one sweep and a mesh gets a dark anchor and a highlight.
+// Neighbouring colours are close in hue, because colours far apart on the wheel mix to mud in a blur.
+// Names are in PALETTE_NAMES, in the same order.
 export const PALETTES = [
   ["#03061c", "#1a4fd6", "#a9d0ff"],
   ["#16141f", "#5b4bd6", "#c9a8e8"],
@@ -96,6 +99,32 @@ export const PALETTES = [
   ["#2a0a14", "#e8456b", "#ffb3c1"],
   ["#0d2b1f", "#1f6b4a", "#a8e6c1"],
   ["#1b1035", "#7b2ff7", "#f107a3", "#ffd6a5"],
+  // dark, for hero sections and dark-mode apps
+  ["#020617", "#0f3d5c", "#14b8a6", "#a7f3d0"],
+  ["#0b0221", "#3b0f8f", "#c026d3", "#ff8fb1"],
+  ["#010b1a", "#063a5e", "#0ea5e9", "#bae6fd"],
+  ["#120302", "#7a1a05", "#f97316", "#fde68a"],
+  ["#030014", "#1e1b4b", "#4f46e5", "#22d3ee"],
+  ["#03120b", "#14532d", "#4ade80", "#ecfccb"],
+  ["#14030b", "#7f1d3f", "#d9a441", "#fff1c9"],
+  ["#0a0a0b", "#27272a", "#71717a", "#e4e4e7"],
+  // pale, for light-mode pages and behind dark text
+  ["#f8fafc", "#dbeafe", "#c7d2fe", "#fbcfe8"],
+  ["#fff7ed", "#fed7aa", "#fda4af", "#f0abfc"],
+  ["#f7fee7", "#bbf7d0", "#99f6e4", "#bae6fd"],
+  ["#f5f0ff", "#c4b5fd", "#99f6e4", "#fde68a", "#fbcfe8"],
+  // vivid, for posters and brand moments
+  ["#1a0b2e", "#7b2cbf", "#ff5d73", "#ffb347", "#ffe8a3"],
+  ["#012a36", "#00877a", "#5eead4", "#fef9c3"],
+  ["#0a0118", "#7c3aed", "#ff2e93", "#22d3ee"],
+  ["#1c0f0a", "#9a3412", "#e9a178", "#f6e7d7"],
+];
+
+export const PALETTE_NAMES = [
+  "Horizon", "Dusk", "Ember", "Thermal", "Pastel", "Rose", "Forest", "Ultraviolet",
+  "Midnight Aurora", "Electric Dusk", "Deep Sea", "Solar Flare", "Cosmic", "Forest Night", "Wine and Gold", "Graphite",
+  "Morning Mist", "Peach Sorbet", "Mint Cream", "Iridescent Pearl",
+  "Sunset Boulevard", "Tropic", "Neon Arcade", "Terracotta",
 ];
 
 export function randomRecipe(seed: number): Recipe {

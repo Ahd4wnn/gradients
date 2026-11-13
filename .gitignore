@@ -46,3 +46,6 @@ playwright-report
 .superpowers
 
 /out/
+
+# Playwright session for the paid test account
+/e2e/.auth/

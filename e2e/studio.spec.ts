@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { PRESETS } from "../src/lib/presets";
-import { decodeRecipe, encodeRecipe } from "../src/lib/recipe";
+import { decodeRecipe, encodeRecipe, PALETTES } from "../src/lib/recipe";
 
 const recipeInUrl = (url: string) => decodeRecipe(new URL(url).searchParams.get("g"));
 
@@ -21,7 +21,8 @@ test("editing a control updates the share link", async ({ page }) => {
 
 test("layers can be added, hidden, moved and deleted with the keyboard-operable buttons", async ({ page }) => {
   await page.goto(`/studio?g=${encodeRecipe(PRESETS[0].recipe)}`); // Deep Horizon: linear, grain
-  await page.getByLabel("Add layer").selectOption("fluted-glass");
+  await page.getByRole("button", { name: "Add layer", exact: true }).click();
+  await page.getByRole("button", { name: "Add Fluted glass" }).click();
   await expect.poll(() => recipeInUrl(page.url()).layers.map((l) => l.type)).toEqual(["linear", "grain", "fluted-glass"]);
   await page.getByRole("button", { name: "Move Fluted glass up" }).click();
   await page.getByLabel("Show Grain").uncheck();
@@ -41,7 +42,7 @@ test("export downloads a PNG and reports it", async ({ page }) => {
 test("a broken share link still opens the studio", async ({ page }) => {
   await page.goto("/studio?g=%25%25not-a-recipe");
   await expect(page.locator("gradient-f")).toBeVisible();
-  await expect(page.getByLabel("Add layer")).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Add layer", exact: true })).toBeEnabled();
 });
 
 test("moving a layer with the keyboard keeps focus on that layer", async ({ page }) => {
@@ -55,4 +56,63 @@ test("moving a layer with the keyboard keeps focus on that layer", async ({ page
   await page.getByRole("button", { name: "Delete Liquid swirl" }).focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: "Mesh blur", exact: true })).toBeFocused();
+});
+
+test("undo and redo walk back through edits; one slider drag is one step", async ({ page }) => {
+  await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`); // Blue Mesh
+  const undo = page.getByRole("button", { name: "Undo" });
+  await expect(undo).toBeDisabled();
+  for (const v of ["3", "4", "5"]) await page.getByLabel("Sharpness").fill(v); // quick edits to one control merge
+  await page.getByRole("button", { name: "Delete Grain" }).click();
+  await expect.poll(() => recipeInUrl(page.url()).layers).toHaveLength(2);
+  await undo.click();
+  await expect.poll(() => recipeInUrl(page.url()).layers).toHaveLength(3);
+  await expect.poll(() => recipeInUrl(page.url()).layers[0].params.sharpness).toBe(5);
+  // the keyboard shortcut, with focus outside any text field
+  await page.locator("h1").click();
+  await page.keyboard.press("Control+z");
+  await expect.poll(() => recipeInUrl(page.url()).layers[0].params.sharpness).toBe(2.5);
+  await expect(undo).toBeDisabled();
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect.poll(() => recipeInUrl(page.url()).layers[0].params.sharpness).toBe(5);
+});
+
+test("dragging a colour point on the preview pins the mesh points, and reset brings back the seed", async ({ page }) => {
+  await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`); // Blue Mesh, mesh selected
+  const dot = page.getByRole("button", { name: /^Colour 1:/ });
+  const frame = (await page.locator("gradient-f").boundingBox())!;
+  await dot.hover();
+  await page.mouse.down();
+  await page.mouse.move(frame.x + frame.width * 0.2, frame.y + frame.height * 0.25, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(() => (recipeInUrl(page.url()).layers[0].params.points as number[]).length).toBe(8);
+  const [x, y] = recipeInUrl(page.url()).layers[0].params.points as number[];
+  expect(x).toBeCloseTo(0.2, 1);
+  expect(y).toBeCloseTo(0.75, 1); // y is up in the recipe
+  // keyboard: arrow keys nudge the focused dot
+  await dot.focus();
+  await page.keyboard.press("Shift+ArrowRight");
+  await expect.poll(() => (recipeInUrl(page.url()).layers[0].params.points as number[])[0]).toBeCloseTo(x + 0.05, 2);
+  await page.getByRole("button", { name: "Reset positions" }).click();
+  await expect.poll(() => recipeInUrl(page.url()).layers[0].params.points).toEqual([]);
+});
+
+test("opacity and blend are saved per layer", async ({ page }) => {
+  await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`);
+  await page.getByRole("button", { name: "Liquid swirl", exact: true }).click();
+  await page.getByLabel("Opacity").fill("0.5");
+  await page.getByLabel("Blend").selectOption("screen");
+  await expect.poll(() => recipeInUrl(page.url()).layers[1]).toMatchObject({ type: "warp", opacity: 0.5, blend: "screen" });
+  await page.getByLabel("Opacity").fill("1");
+  await page.getByLabel("Blend").selectOption("normal");
+  await expect.poll(() => { const l = recipeInUrl(page.url()).layers[1]; return ["opacity" in l, "blend" in l]; }).toEqual([false, false]);
+});
+
+test("a palette recolours the gradient, and randomise can keep the layers", async ({ page }) => {
+  await page.goto(`/studio?g=${encodeRecipe(PRESETS[2].recipe)}`); // mesh, warp, grain
+  await page.getByRole("button", { name: "Palette 3" }).click();
+  await expect.poll(() => recipeInUrl(page.url()).layers[0].params.colors).toEqual(PALETTES[2]);
+  await page.getByLabel("What to randomise").selectOption("colors");
+  await page.getByRole("button", { name: "Randomise", exact: true }).click();
+  await expect.poll(() => recipeInUrl(page.url()).layers.map((l) => l.type)).toEqual(["mesh", "warp", "grain"]);
 });

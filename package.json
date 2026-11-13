@@ -11,10 +11,14 @@
     "prebuild": "npm run build:embed",
     "build:embed": "esbuild src/embed/gradient-f.ts --bundle --format=esm --minify --outfile=public/embed.js",
     "test": "vitest run",
-    "e2e": "npm run build:embed && playwright test"
+    "e2e": "npm run build:embed && playwright test",
+    "db:migrate": "node --env-file=.env.local scripts/db-migrate.mjs"
   },
   "dependencies": {
+    "gsap": "^3.15.1",
+    "motion": "^12.43.0",
     "next": "16.4.6",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
@@ -22,6 +26,7 @@
     "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "esbuild": "^0.28.2",

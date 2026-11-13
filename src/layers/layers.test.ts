@@ -39,7 +39,14 @@ describe.each(allLayers)("layer $id", (def) => {
 });
 
 test("registry lists every layer in menu order and ignores prototype keys", () => {
-  expect(allLayers.map((l) => l.id)).toEqual(["linear","radial","mesh","warp","fluted-glass","grain","halftone","dither","holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt","cursor-push","cursor-light"]);
+  expect(allLayers.map((l) => l.id)).toEqual([
+    "linear", "radial", "mesh", "shapes", "rings", "caustics", "clouds", "cells", "bars", "waves", "stripes",
+    "warp", "ribbons", "melt",
+    "fluted-glass", "holo-foil", "chrome", "satin", "prism", "beams", "frosted-glass", "tiled-glass",
+    "gradient-map", "color-adjust", "thermal",
+    "grain", "halftone", "dither", "line-screen", "vignette", "bloom", "chromatic",
+    "cursor-push", "cursor-light",
+  ]);
   for (const bad of ["constructor", "__proto__", "toString", "nope", 7, null, undefined]) expect(getLayer(bad)).toBeUndefined();
 });
 
@@ -55,4 +62,27 @@ test("usesPointer is false until a layer opts in", () => {
   // nothing that existed before cursor effects reacts by default
   const old = allLayers.filter((l) => l.kind !== "cursor").map((l) => ({ type: l.id, params: {} }));
   expect(usesPointer({ ...base, layers: old })).toBe(false);
+});
+
+test("mesh handles sit where the shader puts the blobs, and dragging one pins the rest in place", async () => {
+  const { mesh } = await import("./mesh");
+  const p = { ...mesh.defaults };
+  const before = mesh.handles!(p, 7);
+  expect(before).toHaveLength(4);
+  for (const h of before) {
+    expect(h.x).toBeGreaterThanOrEqual(0);
+    expect(h.x).toBeLessThanOrEqual(1);
+  }
+  const moved = mesh.moveHandle!(p, 7, 2, 0.1, 0.9);
+  const after = mesh.handles!(moved, 7);
+  expect(after[2]).toMatchObject({ x: 0.1, y: 0.9 });
+  for (const i of [0, 1, 3]) {
+    expect(after[i].x).toBeCloseTo(before[i].x, 3);
+    expect(after[i].y).toBeCloseTo(before[i].y, 3);
+  }
+  // the seed no longer moves pinned blobs
+  expect(mesh.handles!(moved, 99)[0].x).toBeCloseTo(before[0].x, 3);
+  // uniforms always fill all six slots
+  expect(mesh.uniforms(moved).uPoints).toHaveLength(12);
+  expect(mesh.uniforms(moved).uPointCount).toBe(4);
 });

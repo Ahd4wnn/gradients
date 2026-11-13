@@ -16,7 +16,7 @@ const serif = Instrument_Serif({ variable: "--font-instrument-serif", weight: "4
 
 export const metadata: Metadata = {
   title: "gradients by f13s",
-  description: "Make gradients worth paying for: mesh, grain, glass, halftone and dither, exported up to 4K.",
+  description: "A layered gradient studio for the apps your agent builds: 34 layer types, 4K export and a one-line embed. One payment, lifetime access.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

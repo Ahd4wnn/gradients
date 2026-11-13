@@ -77,7 +77,16 @@ export function Controls({ def, params, onChange }: { def: LayerDef; params: Par
               <input type="checkbox" className="switch" checked={v as boolean} onChange={(e) => onChange(c.key, e.target.checked)} />
             </label>
           );
-        if (c.type === "points") return null; // placed by dragging on the preview, so there is nothing to show in the panel
+        // placed by dragging on the preview; the panel only offers a way back to the seeded positions
+        if (c.type === "points")
+          return (v as number[]).length ? (
+            <div key={c.key} className={row}>
+              <span className="text-white/60">{c.label} pinned by dragging</span>
+              <button type="button" className="btn" onClick={() => onChange(c.key, [])}>Reset positions</button>
+            </div>
+          ) : (
+            <p key={c.key} className="text-sm text-white/50">Drag the dots on the preview to move the colours.</p>
+          );
         // keyed by layer so an open picker closes when another layer is selected
         return <ColorList key={id} c={c} cols={v as string[]} onChange={(next) => onChange(c.key, next)} />;
       })}

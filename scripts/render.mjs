@@ -10,7 +10,8 @@ import fs from "node:fs";
 const [w, h] = (process.env.SIZE ?? "1920x1080").split("x").map(Number);
 const [g, name = "recipe"] = process.argv.slice(2);
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+// reduced motion: gallery cards otherwise reveal on scroll and would be blank in a full-page screenshot
+const page = await browser.newPage({ viewport: { width: 1400, height: 900 }, reducedMotion: "reduce" });
 await page.goto("http://localhost:3000/");
 await page.waitForTimeout(1500);
 await page.addScriptTag({ url: "/embed.js", type: "module" });
@@ -36,6 +37,13 @@ if (g) {
   await save(g, `out/${name}.png`);
 } else {
   fs.mkdirSync("out/presets", { recursive: true });
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += 600) {
+      scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    scrollTo(0, 0);
+  });
   await page.screenshot({ path: "out/gallery.png", fullPage: true });
   console.log("wrote out/gallery.png");
   const links = await page.$$eval("a[href^='/studio?g=']", (as) => as.map((a) => ({ name: a.getAttribute("aria-label").replace(/^Open | in the studio$/g, ""), g: new URL(a.href).searchParams.get("g") })));

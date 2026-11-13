@@ -1,4 +1,4 @@
-import { colorUniforms, type LayerDef } from "./types";
+import { centreHandle, colorUniforms, type LayerDef } from "./types";
 
 export const radial: LayerDef = {
   id: "radial",
@@ -14,6 +14,7 @@ export const radial: LayerDef = {
     { key: "falloff", label: "Falloff", type: "range", min: 0.3, max: 3, step: 0.01 },
     { key: "follow", label: "Follow cursor", type: "range", min: 0, max: 1, step: 0.01 },
   ],
+  ...centreHandle("cx", "cy", "Centre"),
   uniforms: (p) => ({
     ...colorUniforms(p.colors as string[]),
     uCenter: [p.cx as number, p.cy as number],

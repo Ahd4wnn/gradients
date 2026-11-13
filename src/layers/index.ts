@@ -1,3 +1,16 @@
+import { caustics } from "./caustics";
+import { clouds } from "./clouds";
+import { cells } from "./cells";
+import { bars } from "./bars";
+import { waves } from "./waves";
+import { stripes } from "./stripes";
+import { gradientMap } from "./gradient-map";
+import { colorAdjust } from "./color-adjust";
+import { thermal } from "./thermal";
+import { lineScreen } from "./line-screen";
+import { vignette } from "./vignette";
+import { bloom } from "./bloom";
+import { chromatic } from "./chromatic";
 import { holoFoil } from "./holo-foil";
 import { chrome } from "./chrome";
 import { satin } from "./satin";
@@ -22,7 +35,14 @@ import type { Recipe } from "../lib/recipe";
 import type { LayerDef } from "./types";
 import { warp } from "./warp";
 
-export const allLayers: LayerDef[] = [linear, radial, mesh, warp, flutedGlass, grain, halftone, dither, holoFoil, chrome, satin, prism, beams, shapes, rings, frostedGlass, tiledGlass, ribbons, melt, cursorPush, cursorLight];
+export const allLayers: LayerDef[] = [
+  linear, radial, mesh, shapes, rings, caustics, clouds, cells, bars, waves, stripes,
+  warp, ribbons, melt,
+  flutedGlass, holoFoil, chrome, satin, prism, beams, frostedGlass, tiledGlass,
+  gradientMap, colorAdjust, thermal,
+  grain, halftone, dither, lineScreen, vignette, bloom, chromatic,
+  cursorPush, cursorLight,
+];
 
 const byId = new Map(allLayers.map((l) => [l.id, l]));
 

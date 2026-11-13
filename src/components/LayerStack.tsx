@@ -1,16 +1,9 @@
 "use client";
 import { useLayoutEffect, useRef } from "react";
-import { allLayers, getLayer } from "@/layers";
+import { getLayer } from "@/layers";
 import { Icon } from "./Icon";
+import { LayerPicker } from "./LayerPicker";
 import { layer as makeLayer, MAX_LAYERS, type Layer } from "@/lib/recipe";
-
-const KINDS = [
-  ["base", "Colour fields"],
-  ["distort", "Distortion"],
-  ["surface", "Glass and material"],
-  ["texture", "Texture"],
-  ["cursor", "Cursor effects"],
-] as const;
 
 const btn = "icon-btn";
 
@@ -51,7 +44,7 @@ export function LayerStack({ layers, selected, onSelect, onChange }: { layers: L
                 {label}
               </button>
               <label className="flex items-center">
-                <input type="checkbox" className="eye" checked={!l.hidden} onChange={() => onChange(layers.map((x, k) => (k !== i ? x : x.hidden ? { type: x.type, params: x.params } : { ...x, hidden: true })))} />
+                <input type="checkbox" className="eye" checked={!l.hidden} onChange={() => onChange(layers.map((x, k) => (k !== i ? x : { ...x, hidden: x.hidden ? undefined : true })))} />
                 <span className="sr-only">Show {label}</span>
               </label>
               <button type="button" className={btn} data-act="up" aria-label={`Move ${label} up`} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="up" /></button>
@@ -73,26 +66,13 @@ export function LayerStack({ layers, selected, onSelect, onChange }: { layers: L
           );
         })}
       </ol>
-      <select
-        aria-label="Add layer"
-        value=""
-        disabled={full}
-        className="select w-full"
-        onChange={(e) => {
-          if (!e.target.value) return;
-          onChange([...layers, makeLayer(e.target.value)]);
+      <LayerPicker
+        full={full}
+        onPick={(id) => {
+          onChange([...layers, makeLayer(id)]);
           onSelect(layers.length);
         }}
-      >
-        <option value="">{full ? `Layer limit reached (${MAX_LAYERS})` : "Add layer…"}</option>
-        {KINDS.map(([kind, title]) => (
-          <optgroup key={kind} label={title}>
-            {allLayers.filter((d) => d.kind === kind).map((d) => (
-              <option key={d.id} value={d.id}>{d.label}</option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
+      />
     </section>
   );
 }

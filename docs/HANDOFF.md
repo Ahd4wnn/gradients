@@ -1,6 +1,49 @@
 # Handoff — where the project stands and what to do next
 
-Written 2026-11-12, updated 2026-11-13 after the second batch of layers was built. Read this first, then `CLAUDE.md`.
+Written 2026-11-12, updated 2026-11-13 three times. Read this first, then `CLAUDE.md`.
+
+## Update 3, 2026-11-13 (night): paid SaaS — accounts, Razorpay, PostgreSQL, new landing page
+
+Not committed; in the working tree on branch `cursor-effects`, on top of update 2.
+
+**MCP server built 2026-11-13** (also uncommitted): `/api/mcp`, paid accounts only, key from the account page, 500 gradients a month. See the MCP section of `CLAUDE.md`. The refunds page now points to business@f13s.com and the "not final" notice is gone from the legal pages; the Terms page still has a "Still to be set by the owner" section.
+
+The owner reordered the plan: sub-project 3 (accounts and payment) comes before the MCP server. Decisions, all by the owner:
+
+- **The studio requires payment.** One lifetime licence: **$25, or ₹2,099 for visitors in India** (guessed from the time zone, switchable). Gallery, landing and legal pages stay public; embedded gradients keep working without an account.
+- **Sign-in: email and password** now; "Continue with Google" later.
+- **Database: local PostgreSQL, no Docker.** Database `gradientf`, owned by a login of the same name whose password is only in `.env.local`.
+- **Razorpay with the LIVE keys** in `.env.local` (git-ignored). Two unpaid orders were created while testing (one INR, one USD; both accepted). No payment has been made by Claude; the paid path was tested by marking a purchase paid in the database.
+- **Later:** an MCP server for agents, with a monthly limit per account.
+
+Built: sign-up / sign-in / sign-out, sessions, checkout with Razorpay Checkout and server-side signature check and capture, reconcile on page load, optional webhook, account page with receipts, paywall on `/studio`, a full landing page (hero, embed strip, features, gallery, how it works, pricing with currency switch, FAQ, closing call to action, footer), legal pages, Motion + GSAP animations. New hero background: the "Dark Opal" preset, moving, with liquid push.
+
+Checks: unit tests, 29 browser tests (4 new for accounts), lint, type-check and production build pass.
+
+**The owner must still:**
+- write the **terms** and **refund policy** (both pages show a "not final" note) and add a **contact address**; Razorpay generally expects all three on a live site.
+- confirm the FAQ's list of payment methods matches what is enabled on the Razorpay account.
+- before deploying: set the four env vars on the host, run `npm run db:migrate`, put the site on HTTPS (the session cookie is `secure` in production), and optionally add the webhook in the Razorpay dashboard.
+
+Known limits: rate limits are in memory (per server process); no password reset or email verification yet (both need an email service); the hero entrance takes about 2.5 s on the dev server.
+
+## Update 2, 2026-11-13 (later): all 25 types, research extras, studio features
+
+Built on top of branch `cursor-effects`. **Not committed yet**: it is all in the working tree.
+
+- **All 25 spec types are built.** The last five: thermal contour (`thermal`), line screen (`line-screen`), gradient bars (`bars`), layered waves (`waves`), retro stripes and sunbursts (`stripes`, with a style select).
+- **Eight extra layers from `docs/research-part-2.md`**, which the owner approved on 2026-11-13 ("build them"): water caustics, clouds, cells, gradient map, colour adjust, vignette, bloom, chromatic split. 34 layers in total.
+- **12 new presets** (44 total), one or more per new layer. None owner-approved; they join the review in `docs/PRESET-TUNING.md`.
+- **Studio features** (research items S1–S5, S7, S8):
+  - draggable points on the preview: mesh colour positions (new `points` param, "Reset positions" in the panel), and the centre of aura glow, rings, light beams and retro stripes. Arrow keys move a focused point.
+  - per-layer **opacity and blend** in a "Mix" section under the layer's controls.
+  - **undo / redo** (buttons and Ctrl/⌘+Z, Ctrl/⌘+Shift+Z, Ctrl+Y), with a slider drag counted as one step; **R** randomises.
+  - **randomise only colours or only layers** (select next to Randomise).
+  - **add-layer picker with live thumbnails**, grouped by kind (replaces the dropdown).
+  - **palettes**: the eight built-ins, save the current colours in the browser, or take colours from an uploaded image.
+- Checks on the working tree: 169 unit tests, 25 browser tests, lint, type-check and production build all pass.
+- Not done from the research list: S6 preview contexts, S9 stop positions, S10 loop and video export, S11 variation sets, drag-to-reorder layers (an earlier decision kept buttons), a phone layout check.
+- Known limit: a point's dot shows its position before any distortion layer above it, so with a strong liquid swirl the dot can sit off the visible blob.
 
 ## Update, 2026-11-13
 

@@ -72,6 +72,12 @@ Every control is custom-drawn but built on the native element, so keyboard, touc
 
 The dropdown menu is the one place a shadow is allowed: it floats above the page.
 
+## Motion
+
+Two libraries, each with one job. **Motion** (`motion/react`) for things that enter: the hero copy rises word by word (blur 6px to sharp, 0.8 s, one shared ease `[0.22, 1, 0.36, 1]`), sections fade up once as they scroll in, and the layer names drift past in a slow marquee. **GSAP ScrollTrigger** for things tied to the scroll position: the hero gradient sinks and grows while its copy lifts away, gallery cards rise in small waves, and large artwork panels drift against the scroll. Hover: cards and their artwork scale to 1.05 over 0.7 s.
+
+Rules: everything holds still under `prefers-reduced-motion`; content is visible in the server HTML and only hidden after the page is running; never animate a gradient's own colours from the outside (the shader animates itself).
+
 ## Rules
 
 - Never colour the chrome. Emphasis = white fill or size.

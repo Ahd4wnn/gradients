@@ -24,7 +24,7 @@ type LayerDef = {
 | `base` | No. Paints a full image. | linear, radial, mesh |
 | `distort` | Yes, at moved coordinates. | warp |
 | `surface` | Yes, through glass or a material. | fluted-glass |
-| `recolor` | Yes, same pixel, new colour. | none yet |
+| `recolor` | Yes, same pixel, new colour. | gradient-map, color-adjust, thermal |
 | `texture` | Yes, adds a print or film texture on top. | grain, halftone, dither |
 | `cursor` | Yes, and reacts to the cursor. Must set `interactive`. | cursor-push, cursor-light |
 
@@ -104,7 +104,7 @@ No other file needs to change: the studio builds its controls from `controls`, a
 |---|---|---|---|
 | `linear` | Horizon fade | base | colours (2–6), angle, bend, spread. First colour is at the bottom when angle is 0. |
 | `radial` | Aura glow | base | colours (2–6), centre x and y, radius, stretch, falloff. First colour is at the centre. |
-| `mesh` | Mesh blur | base | colours (2–6), sharpness, spread, motion. One soft blob per colour, placed by the seed. |
+| `mesh` | Mesh blur | base | colours (2–6), sharpness, spread, motion, colour positions (`points`). One soft blob per colour, placed by the seed until dragged on the preview. |
 | `warp` | Liquid swirl | distort | amount, scale, detail, flow speed. |
 | `fluted-glass` | Fluted glass | surface | ridges, refraction, angle, shading. |
 | `grain` | Grain | texture | amount, grain size, mode (film or edge), monochrome. |
@@ -121,11 +121,22 @@ No other file needs to change: the studio builds its controls from `controls`, a
 | `tiled-glass` | Tiled glass | surface | tiles, tile offset, lens, bevel, angle. |
 | `ribbons` | Wave ribbons | distort | height, waves, twist, angle, flow speed. |
 | `melt` | Melt | distort | amount, columns, jaggedness, angle, flow speed. |
+| `caustics` | Water caustics | base | colours (2–6, deep to light), scale, sharpness, light, flow speed. |
+| `clouds` | Clouds | base | sky colours (2–6, bottom to top), cloud colour, cover, softness, scale, drift speed. |
+| `cells` | Cells | base | colours (2–6, first fills the gaps), cells, gap, bevel, motion. |
+| `bars` | Gradient bars | base | colours (2–6), bars, angle, stagger, ramp length, edge blur. |
+| `waves` | Layered waves | base | colours (2–6, front to back), layers, wave height, waves, edge blur, shadow, flow speed. |
+| `stripes` | Retro stripes | base | colours (2–6), style (stripes or sunburst), stripes, angle, centre x and y, bend, edge blur. |
+| `gradient-map` | Gradient map | recolor | colours (2–6, dark to light), contrast, shift, amount. Brightness below picks the colour. |
+| `color-adjust` | Colour adjust | recolor | hue shift, saturation, exposure (stops), contrast, warmth. |
+| `thermal` | Thermal contour | recolor | heat colours (2–6), bands, contour lines, smoothness. |
+| `line-screen` | Line screen | texture | paper colour, line spacing, angle, wave, softness, light lines. |
+| `vignette` | Vignette | texture | edge colour, amount, clear area, softness, roundness. |
+| `bloom` | Bloom | texture | glow from (threshold), spread, strength. Adds light. |
+| `chromatic` | Chromatic split | texture | amount, edges only. |
 | `cursor-push` | Liquid push | cursor | push, reach, drag. |
 | `cursor-light` | Spotlight | cursor | light colour, brightness, size. |
 
 `mesh` and `radial` also have a "Follow cursor" control (0 by default).
 
-Still to build, from the spec's catalogue:
-
-No plan yet: thermal contour, line screen, gradient bars, layered waves, retro stripes and sunbursts.
+All 25 types in the spec's catalogue are built (some as a mode of another layer: pastel wash is a mesh preset, sunbursts are a style of `stripes`). The eight extra layers above the spec (caustics, clouds, cells, gradient map, colour adjust, vignette, bloom, chromatic split) come from `docs/research-part-2.md`.

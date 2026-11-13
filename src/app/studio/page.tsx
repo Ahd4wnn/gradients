@@ -1,10 +1,24 @@
-"use client";
-import dynamic from "next/dynamic";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { getAccount } from "@/lib/server/account";
+import StudioLoader from "./StudioLoader";
 
-// Client-only: the recipe lives in the URL, so there is nothing useful to render on the server,
-// and reading it at first render avoids a load-time race with early edits.
-const Studio = dynamic(() => import("./Studio"), { ssr: false });
+export const metadata = { title: "Studio · gradients by f13s" };
 
-export default function Page() {
-  return <Studio />;
+/** The studio is the paid product: signed in and licensed, or sent to sign in / checkout with the way back kept. */
+async function Gate({ searchParams }: { searchParams: Promise<{ g?: string }> }) {
+  const { g } = await searchParams;
+  const here = typeof g === "string" ? `/studio?g=${encodeURIComponent(g)}` : "/studio";
+  const account = await getAccount();
+  if (!account) redirect(`/signin?next=${encodeURIComponent(here)}`);
+  if (!account.pro) redirect(`/checkout?next=${encodeURIComponent(here)}`);
+  return <StudioLoader />;
+}
+
+export default function Page({ searchParams }: PageProps<"/studio">) {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-ink" />}>
+      <Gate searchParams={searchParams as Promise<{ g?: string }>} />
+    </Suspense>
+  );
 }

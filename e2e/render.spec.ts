@@ -16,7 +16,7 @@ async function open(page: Page) {
   // only the engine's own errors: the dev server and deliberate context loss add unrelated console noise
   page.on("console", (m) => m.type() === "error" && m.text().includes("[gradient-f]") && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto("/");
+  await page.goto("/privacy");
   await page.addScriptTag({ url: "/embed.js", type: "module" });
   await page.waitForFunction(() => !!window.GradientF);
   return errors;
@@ -152,7 +152,7 @@ test("an element larger than the GPU limit still renders", async ({ page }) => {
   expect(out.note).toBe(false);
 });
 
-const WAVE_2 = ["holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt"];
+const WAVE_2 = ["holo-foil","chrome","satin","prism","beams","shapes","rings","frosted-glass","tiled-glass","ribbons","melt","caustics","clouds","cells","bars","waves","stripes","gradient-map","color-adjust","thermal","line-screen","vignette","bloom","chromatic"];
 
 test("new layers survive the ends of their ranges", async ({ page }) => {
   const errors = await open(page);

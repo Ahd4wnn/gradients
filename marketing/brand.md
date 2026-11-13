@@ -28,6 +28,10 @@ The `marketing-expert` agent reads this before writing anything and keeps it up 
 
 - Videos do not mention the price or any offer. They end on the product name and gradients.f13s.com. (2026-11-13)
 
+## Offers
+
+- **LAUNCH50**: 50% off, first 100 purchases, until 2026-12-13. Link: https://gradients.f13s.com/checkout?code=LAUNCH50. May be used in post text and replies, never in a video. Check what is left with `scripts/coupon.mjs` on the server before promising it.
+
 ## Numbers the founder has confirmed
 
 None yet. Do not state user counts, revenue or testimonials until they are listed here.
@@ -37,6 +41,7 @@ None yet. Do not state user counts, revenue or testimonials until they are liste
 | # | File | What it shows | Status |
 |---|---|---|---|
 | 1 | `video/01-phones.html` | Two phones with the same login screen: a default CSS gradient next to ours | rendered, not posted |
+| 2 | `video/02-stack.html` | One gradient built layer by layer: mesh, swirl, fluted glass, grain | rendered, not posted |
 
 ## Post log
 

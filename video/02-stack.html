@@ -1,0 +1,64 @@
+<!doctype html>
+<!-- Video 2: one gradient built up layer by layer, full screen, with the layer list ticking on beside it. -->
+<meta charset="utf-8" />
+<script type="application/json" id="video">{ "width": 1920, "height": 1080, "fps": 30, "duration": 11 }</script>
+<script type="module" src="/embed.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1920px; height: 1080px; overflow: hidden; background: #000; color: #fff; font-family: "Segoe UI", system-ui, sans-serif; }
+  em { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  @keyframes on { from { opacity: 0.32; } to { opacity: 1; } }
+  @keyframes tick { from { transform: scale(0); } to { transform: scale(1); } }
+
+  /* the same gradient four times, each with one more layer, stacked and faded in on top of the last */
+  .bg, .bg > * { position: absolute; inset: 0; }
+  gradient-f { display: block; width: 100%; height: 100%; }
+  .g2 { animation: fade 0.7s ease 2.2s both; }
+  .g3 { animation: fade 0.7s ease 4.4s both; }
+  .g4 { animation: fade 0.7s ease 6.6s both; }
+  .shade { background: linear-gradient(to right, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 55%); }
+
+  .panel { position: absolute; left: 110px; top: 250px; width: 520px; padding: 34px 34px 30px; border-radius: 36px; background: rgb(0 0 0 / 0.42); border: 1px solid rgb(255 255 255 / 0.16); backdrop-filter: blur(26px); animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s both; }
+  .panel h2 { font-size: 22px; font-weight: 500; color: rgb(255 255 255 / 0.6); letter-spacing: 0; }
+  .row { display: flex; align-items: center; gap: 18px; margin-top: 18px; padding: 20px 22px; border-radius: 22px; background: rgb(255 255 255 / 0.1); font-size: 34px; letter-spacing: -0.02em; opacity: 0.32; }
+  .row small { margin-left: auto; font-size: 19px; letter-spacing: 0; color: rgb(255 255 255 / 0.6); }
+  .dot { width: 30px; height: 30px; flex: none; border-radius: 50%; border: 2px solid rgb(255 255 255 / 0.5); display: grid; place-items: center; }
+  .dot i { width: 16px; height: 16px; border-radius: 50%; background: #fff; transform: scale(0); }
+  .r1 { animation: on 0.4s ease 0.7s both; }   .r1 i { animation: tick 0.35s ease 0.7s both; }
+  .r2 { animation: on 0.4s ease 2.2s both; }   .r2 i { animation: tick 0.35s ease 2.2s both; }
+  .r3 { animation: on 0.4s ease 4.4s both; }   .r3 i { animation: tick 0.35s ease 4.4s both; }
+  .r4 { animation: on 0.4s ease 6.6s both; }   .r4 i { animation: tick 0.35s ease 6.6s both; }
+
+  h1 { position: absolute; left: 110px; top: 96px; font-size: 76px; font-weight: 400; letter-spacing: -0.035em; animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0s both; }
+  .line { position: absolute; left: 114px; top: 800px; font-size: 40px; letter-spacing: -0.02em; animation: rise 0.7s ease 7.6s both; }
+  .line code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 30px; padding: 6px 14px; border-radius: 12px; background: rgb(0 0 0 / 0.45); border: 1px solid rgb(255 255 255 / 0.2); }
+
+  .end { position: absolute; inset: 0; z-index: 10; display: grid; place-content: center; text-align: center; background: rgb(0 0 0 / 0.84); backdrop-filter: blur(18px); animation: fade 0.8s ease 9.3s both; }
+  .end b { font-size: 88px; font-weight: 400; letter-spacing: -0.04em; }
+  .end b i { font-style: normal; color: rgb(255 255 255 / 0.55); }
+  .end span { margin-top: 18px; font-size: 30px; color: rgb(255 255 255 / 0.7); }
+</style>
+
+<div class="bg">
+  <gradient-f class="g1" data-speed="1" data-recipe='{"seed":21,"layers":[{"type":"mesh","params":{"colors":["#0b0221","#3b0f8f","#c026d3","#ff8fb1","#12064a"],"sharpness":3,"motion":2}}]}'></gradient-f>
+  <gradient-f class="g2" data-speed="1" data-recipe='{"seed":21,"layers":[{"type":"mesh","params":{"colors":["#0b0221","#3b0f8f","#c026d3","#ff8fb1","#12064a"],"sharpness":3,"motion":2}},{"type":"warp","params":{"amount":0.32,"scale":1.2,"detail":3,"flow":2}}]}'></gradient-f>
+  <gradient-f class="g3" data-speed="1" data-recipe='{"seed":21,"layers":[{"type":"mesh","params":{"colors":["#0b0221","#3b0f8f","#c026d3","#ff8fb1","#12064a"],"sharpness":3,"motion":2}},{"type":"warp","params":{"amount":0.32,"scale":1.2,"detail":3,"flow":2}},{"type":"fluted-glass","params":{"count":26,"strength":5,"angle":12,"shade":0.3}}]}'></gradient-f>
+  <gradient-f class="g4" data-speed="1" data-recipe='{"seed":21,"layers":[{"type":"mesh","params":{"colors":["#0b0221","#3b0f8f","#c026d3","#ff8fb1","#12064a"],"sharpness":3,"motion":2}},{"type":"warp","params":{"amount":0.32,"scale":1.2,"detail":3,"flow":2}},{"type":"fluted-glass","params":{"count":26,"strength":5,"angle":12,"shade":0.3}},{"type":"grain","params":{"amount":0.09,"size":1.5}}]}'></gradient-f>
+  <div class="shade"></div>
+</div>
+
+<h1>A gradient is a <em>stack</em>.</h1>
+
+<div class="panel">
+  <h2>Layers</h2>
+  <div class="row r1"><span class="dot"><i></i></span>Mesh blur<small>colour</small></div>
+  <div class="row r2"><span class="dot"><i></i></span>Liquid swirl<small>distortion</small></div>
+  <div class="row r3"><span class="dot"><i></i></span>Fluted glass<small>surface</small></div>
+  <div class="row r4"><span class="dot"><i></i></span>Grain<small>texture</small></div>
+</div>
+
+<p class="line">Four layers. One line of code: <code>&lt;gradient-f&gt;</code></p>
+
+<div class="end"><b>gradients <i>by f13s</i></b><span>gradients.f13s.com</span></div>

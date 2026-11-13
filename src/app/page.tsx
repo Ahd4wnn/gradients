@@ -7,6 +7,7 @@ import { SiteFooter, SiteNav } from "@/components/SiteNav";
 import { Thumb } from "@/components/Thumb";
 import { allLayers } from "@/layers";
 import { caption } from "@/lib/caption";
+import { MCP_MONTHLY_LIMIT } from "@/lib/mcp";
 import { PRESETS } from "@/lib/presets";
 import { encodeRecipe, layer, type Recipe } from "@/lib/recipe";
 
@@ -35,6 +36,7 @@ const INCLUDED = [
   "The full studio, every layer type",
   "PNG export up to 4K, any aspect ratio",
   "HTML and React embed code",
+  "MCP server for Claude and other agents",
   "Share links that reopen any gradient",
   "Palettes, image colours, undo",
   "One payment, no subscription",
@@ -44,7 +46,7 @@ const FAQ = [
   ["Is this a subscription?", "No. You pay once and your account keeps access to the studio. There is nothing to renew or cancel."],
   ["How do I pay?", "Through Razorpay. In India you can pay in rupees by card, UPI, netbanking or wallet; elsewhere in US dollars by card. Your card details go to Razorpay, never to us."],
   ["Do embedded gradients need my account?", "No. Once you copy the embed code, the gradient runs on any site, with or without you signed in. Only the studio, where you make and export gradients, needs the licence."],
-  ["What do AI agents get out of this?", "Each gradient is a short recipe in a URL, and the embed is one HTML element, so an agent can drop a polished background into a page without image files or design tools."],
+  ["What do AI agents get out of this?", "Each gradient is a short recipe in a URL, and the embed is one HTML element, so an agent can drop a polished background into a page without image files or design tools. The licence also includes an MCP server: connect your agent with a key from your account page and ask it for a gradient in plain words."],
   ["Does it work on phones?", "Embedded gradients do, and they scale to any screen. The studio is built for a desktop browser."],
   ["What if something goes wrong with my payment?", "If money left your account but the studio did not open, sign in and open your account page: it checks with Razorpay again and unlocks the studio. See the refund policy for the rest."],
 ];
@@ -99,6 +101,31 @@ export default function Home() {
   recipe="eyJ2IjoxLCJzZWVkIjo3…"
   style="display:block;height:100vh">
 </gradient-f>`}</pre>
+        </Reveal>
+      </section>
+
+      {/* MCP server */}
+      <section id="mcp" aria-label="MCP server" className="mx-auto mt-5 max-w-6xl scroll-mt-28 px-4">
+        <Reveal className="grid items-center gap-8 rounded-3xl bg-white/5 p-8 lg:grid-cols-[1.2fr_1fr] lg:p-12">
+          <pre className="order-last overflow-x-auto rounded-2xl bg-black/60 p-6 font-mono text-sm leading-relaxed text-white/80 ring-1 ring-white/10 lg:order-first">{`$ claude mcp add --transport http gradients \\
+    https://…/api/mcp \\
+    --header "Authorization: Bearer gf_…"
+
+You     A dark chrome hero background
+        that reacts to the cursor.
+
+Claude  create_gradient → pastes
+        <gradient-f recipe="…"> into the page
+        and hands you a studio link.`}</pre>
+          <div>
+            <p className="text-sm text-white/50">MCP server · included with the licence</p>
+            <h2 className="mt-3 text-3xl tracking-tight sm:text-4xl">Or just <em className="font-serif">ask</em> your agent</h2>
+            <p className="mt-4 text-white/60">
+              Connect Claude, or any agent that speaks MCP, with a key from your account page. It knows every layer, control and effect, builds the gradient you describe, and comes back with
+              the embed code and a studio link so you can fine-tune it.
+            </p>
+            <p className="mt-4 text-sm text-white/50">{MCP_MONTHLY_LIMIT} gradients a month. Nothing to install.</p>
+          </div>
         </Reveal>
       </section>
 

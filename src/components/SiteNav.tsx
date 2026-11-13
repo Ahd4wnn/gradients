@@ -36,7 +36,7 @@ export function SiteNav({ links = true }: { links?: boolean }) {
       <Logo />
       {links && (
         <div className="hidden items-center md:flex">
-          {[["#features", "Features"], ["#gallery", "Gallery"], ["#pricing", "Pricing"], ["#faq", "FAQ"]].map(([href, label]) => (
+          {[["#features", "Features"], ["#mcp", "MCP"], ["#gallery", "Gallery"], ["#pricing", "Pricing"], ["#faq", "FAQ"]].map(([href, label]) => (
             <Link key={href} href={`/${href}`} className={`${pill} text-white/70 hover:text-white`}>{label}</Link>
           ))}
         </div>

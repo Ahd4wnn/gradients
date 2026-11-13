@@ -1,0 +1,116 @@
+<!doctype html>
+<!-- Video 5: why gradients go muddy. The same red-to-green gradient, mixed the browser's default way (sRGB) and the way
+     gradients by f13s mixes (OKLab), on a laptop screen, with zooms into the middle of each and captions.
+     Midpoint colours computed exactly: sRGB #807B54 (OKLab lightness 0.58, darker than both ends at 0.65 and 0.73),
+     OKLab #BD9255 (lightness 0.69, between the ends). -->
+<meta charset="utf-8" />
+<script type="application/json" id="video">{ "width": 1920, "height": 1080, "fps": 30, "duration": 15 }</script>
+<script type="module" src="/embed.js"></script>
+<link rel="stylesheet" href="/__vendor/fonts/bodoni-moda/index.css" />
+<link rel="stylesheet" href="/__vendor/fonts/bodoni-moda/wght-italic.css" />
+<link rel="stylesheet" href="/__vendor/fonts/host-grotesk/index.css" />
+<link rel="stylesheet" href="/__vendor/fonts/martian-mono/index.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1920px; height: 1080px; overflow: hidden; background: #fff; color: #0c0c0d; font-family: "Host Grotesk Variable", sans-serif; }
+  .mono { font-family: "Martian Mono Variable", monospace; }
+  .serif { font-family: "Bodoni Moda Variable", serif; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(60px); } to { opacity: 1; transform: none; } }
+
+  /* the camera: scale and origin move together; changing the origin while at scale 1 moves nothing */
+  .cam { position: absolute; inset: 0; animation: cam 15s both; }
+  @keyframes cam {
+    0%     { transform: scale(1); transform-origin: 960px 364px; animation-timing-function: ease-in-out; }
+    24%    { transform: scale(1); transform-origin: 960px 364px; animation-timing-function: cubic-bezier(.65,0,.25,1); }
+    32%    { transform: scale(3.4); transform-origin: 960px 364px; }
+    45%    { transform: scale(3.4); transform-origin: 960px 364px; animation-timing-function: cubic-bezier(.65,0,.25,1); }
+    51.5%  { transform: scale(1); transform-origin: 960px 364px; }
+    52%    { transform: scale(1); transform-origin: 960px 580px; animation-timing-function: cubic-bezier(.65,0,.25,1); }
+    59.5%  { transform: scale(3.4); transform-origin: 960px 580px; }
+    72%    { transform: scale(3.4); transform-origin: 960px 580px; animation-timing-function: cubic-bezier(.65,0,.25,1); }
+    79%    { transform: scale(1); transform-origin: 960px 580px; }
+    100%   { transform: scale(1); transform-origin: 960px 580px; }
+  }
+
+  /* MacBook Pro, space black: lid with thin bezel and notch, then the deck */
+  .mac { position: absolute; left: 330px; top: 92px; width: 1260px; animation: rise 1s cubic-bezier(.2,.7,.2,1) .1s both; }
+  .lid { position: relative; width: 1260px; height: 800px; padding: 18px 18px 22px; border-radius: 34px 34px 10px 10px; background: #0b0b0c; box-shadow: 0 0 0 2px #2c2c2f, inset 0 0 0 1px #1d1d20; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 16px 16px 4px 4px; overflow: hidden; background: #fbfbfa; }
+  .notch { position: absolute; top: 18px; left: 50%; width: 190px; height: 30px; margin-left: -95px; border-radius: 0 0 14px 14px; background: #0b0b0c; z-index: 3; }
+  .deck { position: relative; left: -120px; width: 1500px; height: 30px; border-radius: 3px 3px 22px 22px; background: linear-gradient(#45454a, #2a2a2d 40%, #161618); box-shadow: 0 30px 50px rgb(0 0 0 / 0.16), 0 8px 14px rgb(0 0 0 / 0.1); }
+  .deck::before { content: ""; position: absolute; top: 0; left: 50%; width: 230px; height: 10px; margin-left: -115px; border-radius: 0 0 12px 12px; background: #1a1a1c; }
+
+  /* on the screen: a plain macOS-style window with the two gradients */
+  .menubar { height: 34px; padding: 0 22px; display: flex; align-items: center; gap: 22px; font-size: 14px; color: #333; background: #fff; border-bottom: 1px solid #ececea; }
+  .menubar b { font-weight: 650; }
+  .menubar .r { margin-left: auto; color: #777; }
+  .ui { position: absolute; left: 56px; right: 56px; top: 74px; }
+  .ui h2 { font-size: 30px; font-weight: 500; letter-spacing: -0.02em; }
+  .ui h2 small { margin-left: 12px; font-size: 15px; color: #888; font-weight: 400; }
+  .label { margin-top: 34px; display: flex; justify-content: space-between; font-size: 15px; color: #555; }
+  .label code { font-size: 12px; color: #888; }
+  .bar { position: relative; margin-top: 12px; height: 150px; border-radius: 18px; overflow: hidden; }
+  .bar.css { background: linear-gradient(90deg, #ff2d55, #00c853); }
+  .bar gradient-f { display: block; width: 100%; height: 100%; }
+  /* the midpoint marker, shown only while the camera is in close */
+  .mid { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px; background: #fff; opacity: 0; z-index: 2; }
+  .mid::before, .mid::after { content: ""; position: absolute; left: -5px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+  .mid::before { top: -6px; } .mid::after { bottom: -6px; }
+  .chip { position: absolute; top: 50%; left: 50%; margin: -20px 0 0 14px; padding: 7px 10px; border-radius: 10px; font-size: 11px; line-height: 1.35; background: #fff; color: #111; opacity: 0; z-index: 2; box-shadow: 0 4px 14px rgb(0 0 0 / 0.12); white-space: nowrap; }
+  .chip i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; font-style: normal; }
+  .chip span { color: #777; }
+  .a .mid, .a .chip { animation: fade .4s ease 4.9s both, out .3s ease 6.6s forwards; }
+  .b .mid, .b .chip { animation: fade .4s ease 9.0s both, out .3s ease 10.7s forwards; }
+  .foot { margin-top: 30px; font-size: 14px; color: #888; }
+
+  /* captions: outside the camera, so they stay put while it zooms */
+  .cap { position: absolute; left: 0; right: 0; bottom: 46px; display: grid; place-items: center; z-index: 5; }
+  .cap p { grid-area: 1 / 1; padding: 12px 22px; border-radius: 14px; font-size: 34px; letter-spacing: -0.01em; color: #fff; background: rgb(12 12 13 / 0.86); opacity: 0; }
+  .cap p em { font-family: "Bodoni Moda Variable", serif; font-style: italic; }
+  .c1 { animation: fade .35s ease .4s both, out .3s ease 3.3s forwards; }
+  .c2 { animation: fade .35s ease 3.5s both, out .3s ease 7.1s forwards; }
+  .c3 { animation: fade .35s ease 7.3s both, out .3s ease 11.3s forwards; }
+  .c4 { animation: fade .35s ease 11.5s both, out .3s ease 12.9s forwards; }
+
+  .end { position: absolute; inset: 0; z-index: 10; display: grid; place-content: center; text-align: center; background: rgb(255 255 255 / 0.93); backdrop-filter: blur(22px); animation: fade .7s ease 13.1s both; }
+  .end b { font-size: 96px; font-weight: 500; letter-spacing: -0.03em; }
+  .end b i { font-weight: 400; color: #8a8a8f; }
+  .end span { margin-top: 20px; font-size: 24px; }
+</style>
+
+<div class="cam">
+  <div class="mac">
+    <div class="lid">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="menubar"><b>Gradient Studio</b><span>File</span><span>Edit</span><span>View</span><span class="r mono">9:41</span></div>
+        <div class="ui">
+          <h2>Red to green <small class="mono">#FF2D55 → #00C853</small></h2>
+          <div class="label"><span>Browser default</span><code class="mono">linear-gradient(90deg, #ff2d55, #00c853)</code></div>
+          <div class="bar css a">
+            <div class="mid"></div>
+            <div class="chip mono"><i style="background:#807b54"></i>#807B54<br /><span>darker than both ends</span></div>
+          </div>
+          <div class="label"><span>gradients by f13s</span><code class="mono">the same two colours, mixed in OKLab</code></div>
+          <div class="bar b">
+            <gradient-f data-recipe='{"layers":[{"type":"linear","params":{"colors":["#ff2d55","#00c853"],"angle":90}}]}'></gradient-f>
+            <div class="mid"></div>
+            <div class="chip mono"><i style="background:#bd9255"></i>#BD9255<br /><span>stays between them</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="deck"></div>
+  </div>
+</div>
+
+<div class="cap">
+  <p class="c1">Ever wondered why gradients go <em>muddy</em> in the middle?</p>
+  <p class="c2">Browsers mix colours in sRGB, so the middle comes out darker than both ends.</p>
+  <p class="c3">Mix in OKLab, a colour space built around how eyes see, and it stays bright.</p>
+  <p class="c4">Every gradient in the studio is mixed this way.</p>
+</div>
+
+<div class="end"><b class="serif">gradients <i>by f13s</i></b><span class="mono">gradients.f13s.com</span></div>

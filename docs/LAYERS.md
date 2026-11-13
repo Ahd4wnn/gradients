@@ -116,7 +116,7 @@ No other file needs to change: the studio builds its controls from `controls`, a
 | `prism` | Prism streaks | surface | streaks, angle, width, length, rainbow, brightness. Adds light to what is below. |
 | `beams` | Light beams | surface | light colours (1–3), source x and y, rays, reach, brightness, flow speed. Adds light. |
 | `shapes` | Blurred shapes | base | colours (2–6, first is the background), shapes, size, blur, shape (circle, sparkle, ring), motion. |
-| `rings` | Rings and arcs | base | colours (2–6), centre x and y, rings, fade, stretch. |
+| `rings` | Rings and arcs | base | colours (2–6), centre x and y, rings, fade, stretch, tighten outward (first band wide, each next thinner), repeat colours (off: the last colour fills the rest). |
 | `frosted-glass` | Frosted glass | surface | glass tint, blur, frost, milkiness. |
 | `tiled-glass` | Tiled glass | surface | tiles, tile offset, lens, bevel, angle. |
 | `ribbons` | Wave ribbons | distort | height, waves, twist, angle, flow speed. |

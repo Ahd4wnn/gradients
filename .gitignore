@@ -52,3 +52,6 @@ playwright-report
 
 # server details that should not be public
 docs/DEPLOY.private.md
+
+# reference videos for video 4: third-party, not ours to publish
+video/04-models/*.mp4

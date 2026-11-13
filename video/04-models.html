@@ -1,0 +1,129 @@
+<!doctype html>
+<!-- Video 4: Claude Opus 5.5 vs Claude Fable 5.2. Each model built the same onboarding from video/04-models/BRIEF.md;
+     the two pages run unedited inside the phone frames. Brief, builds and this scene are all in video/04-models*. -->
+<meta charset="utf-8" />
+<script type="application/json" id="video">{ "width": 1920, "height": 1080, "fps": 30, "duration": 30 }</script>
+<link rel="stylesheet" href="/__vendor/fonts/bodoni-moda/index.css" />
+<link rel="stylesheet" href="/__vendor/fonts/bodoni-moda/wght-italic.css" />
+<link rel="stylesheet" href="/__vendor/fonts/host-grotesk/index.css" />
+<link rel="stylesheet" href="/__vendor/fonts/martian-mono/index.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1920px; height: 1080px; overflow: hidden; background: #fff; color: #0c0c0d; font-family: "Host Grotesk Variable", sans-serif; }
+  .serif { font-family: "Bodoni Moda Variable", serif; }
+  .mono { font-family: "Martian Mono Variable", monospace; }
+  @keyframes rise { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes lit { 0%, 100% { opacity: 0.28; } 4%, 96% { opacity: 1; } }
+  .in { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+  h1 { position: absolute; top: 44px; left: 0; right: 0; text-align: center; font-size: 62px; font-weight: 500; letter-spacing: -0.02em; animation-delay: 0.1s; }
+  h1 i { font-weight: 400; color: #8a8a8f; padding: 0 0.18em; }
+
+  /* the phone: drawn at the real 440 x 956 point size, then scaled */
+  .phone { position: absolute; top: 152px; width: 384px; height: 808px; }
+  .phone.a { left: 460px; animation-delay: 0.35s; }
+  .phone.b { left: 1076px; animation-delay: 0.5s; }
+  .body { position: absolute; left: 0; top: 0; width: 468px; height: 984px; padding: 14px; border-radius: 76px; transform: scale(0.8205); transform-origin: 0 0;
+    background: linear-gradient(145deg, #e9e6e0, #a9a6a0 45%, #d9d6d0 70%, #8d8a85); box-shadow: 0 0 0 1px #77746f, inset 0 0 0 2px #f4f2ee, 0 50px 90px rgb(0 0 0 / 0.16), 0 12px 24px rgb(0 0 0 / 0.08); }
+  .body::before, .body::after { content: ""; position: absolute; width: 4px; border-radius: 2px; background: linear-gradient(#bdbab4, #8d8a85); }
+  .body::before { left: -4px; top: 210px; height: 64px; box-shadow: 0 86px 0 #a5a29c, 0 -74px 0 #a5a29c; }
+  .body::after { right: -4px; top: 250px; height: 104px; }
+  .glass { position: relative; width: 440px; height: 956px; border-radius: 62px; overflow: hidden; background: #fff; box-shadow: 0 0 0 6px #050506; isolation: isolate; }
+  iframe { display: block; width: 440px; height: 956px; border: 0; background: #fff; }
+  .island { position: absolute; z-index: 3; top: 13px; left: 50%; width: 102px; height: 31px; margin-left: -51px; border-radius: 16px; background: #000; }
+  /* drawn in white with "difference", so the status bar reads on a light or a dark screen alike */
+  .status, .home { position: absolute; z-index: 2; mix-blend-mode: difference; color: #fff; pointer-events: none; }
+  .status { top: 20px; left: 54px; right: 44px; display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+  .status svg { display: block; }
+  .home { bottom: 9px; left: 50%; width: 144px; height: 5px; margin-left: -72px; border-radius: 3px; background: #fff; }
+
+  .who { position: absolute; top: 250px; width: 330px; animation-delay: 0.9s; }
+  .who.a { left: 96px; text-align: right; }
+  .who.b { left: 1494px; }
+  .who small { display: block; font-size: 20px; color: #77777c; }
+  .who b { display: block; margin-top: 2px; font-size: 76px; line-height: 1; font-weight: 500; letter-spacing: -0.03em; }
+  .who code { display: inline-block; margin-top: 22px; padding: 8px 12px; border-radius: 10px; background: #f3f3f1; font-size: 15px; }
+  .who p { margin-top: 26px; font-size: 19px; line-height: 1.5; color: #55555a; }
+
+  .steps { position: absolute; left: 872px; top: 330px; width: 190px; animation: fade 0.8s ease 1.3s both; }
+  .steps .t { margin-bottom: 22px; text-align: center; font-size: 15px; color: #77777c; }
+  .steps li { list-style: none; display: flex; gap: 12px; align-items: baseline; padding: 11px 0; font-size: 18px; white-space: nowrap; opacity: 0.28; animation: lit 4s linear both; }
+  .steps li span { font-size: 12px; color: #77777c; }
+  .steps li:nth-child(1) { animation-delay: 2s; } .steps li:nth-child(2) { animation-delay: 6s; } .steps li:nth-child(3) { animation-delay: 10s; }
+  .steps li:nth-child(4) { animation-delay: 14s; } .steps li:nth-child(5) { animation-delay: 18s; } .steps li:nth-child(6) { animation: lit6 4s linear 22s both; }
+  @keyframes lit6 { 0% { opacity: 0.28; } 4%, 100% { opacity: 1; } }
+
+  .foot { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; font-size: 19px; color: #55555a; animation: fade 0.8s ease 1.6s both; }
+  .foot b { color: #0c0c0d; font-weight: 600; }
+
+  .end { position: absolute; inset: 0; z-index: 10; display: grid; place-content: center; text-align: center; background: rgb(255 255 255 / 0.92); backdrop-filter: blur(22px); animation: fade 0.7s ease 27.6s both; }
+  .end b { font-size: 96px; font-weight: 500; letter-spacing: -0.03em; }
+  .end b i { font-weight: 400; color: #8a8a8f; }
+  .end span { margin-top: 20px; font-size: 24px; }
+</style>
+
+<h1 class="serif in">Opus 5.5 <i>vs</i> Fable 5.2</h1>
+
+<div class="who a in">
+  <small>Claude</small>
+  <b class="serif">Opus 5.5</b>
+  <code class="mono">claude-opus-5-5</code>
+  <p>Same written brief.<br />One attempt.<br />Shown unedited.</p>
+</div>
+
+<div class="phone a in">
+  <div class="body">
+    <div class="glass">
+      <iframe src="04-models/opus-5-5/index.html" data-start="2" scrolling="no" title="Built by Claude Opus 5.5"></iframe>
+      <div class="island"></div>
+      <div class="status"><span>9:41</span>
+        <svg width="78" height="14" viewBox="0 0 78 14" fill="#fff"><rect x="0" y="9" width="3.4" height="5" rx="1"/><rect x="5.2" y="6.5" width="3.4" height="7.5" rx="1"/><rect x="10.4" y="3.5" width="3.4" height="10.5" rx="1"/><rect x="15.6" y="0" width="3.4" height="14" rx="1"/><path d="M33.5 3.2c2.6 0 5 1 6.8 2.7l1.2-1.3A11.6 11.6 0 0 0 33.5 1.4c-3 0-5.8 1.2-8 3.2l1.2 1.3a9.8 9.8 0 0 1 6.8-2.7Zm0 3.7c1.6 0 3.1.6 4.3 1.6l1.2-1.3a8.2 8.2 0 0 0-11 0l1.2 1.3a6.4 6.4 0 0 1 4.3-1.6Zm0 3.6c.8 0 1.5.3 2 .8l-2 2.2-2-2.2c.5-.5 1.2-.8 2-.8Z"/><rect x="48.5" y="1" width="25" height="12" rx="3.6" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="50.2" y="2.7" width="21.6" height="8.6" rx="2.2"/><rect x="74.8" y="4.8" width="2" height="4.4" rx="1" fill-opacity=".5"/></svg>
+      </div>
+      <div class="home"></div>
+    </div>
+  </div>
+</div>
+
+<div class="steps">
+  <p class="t mono"><span id="clock">00.0</span> / 24.0 s</p>
+  <ol>
+    <li><span class="mono">01</span>Welcome</li>
+    <li><span class="mono">02</span>What you shoot</li>
+    <li><span class="mono">03</span>Which light</li>
+    <li><span class="mono">04</span>Home spot</li>
+    <li><span class="mono">05</span>Wake-up alert</li>
+    <li><span class="mono">06</span>You're set</li>
+  </ol>
+</div>
+
+<div class="phone b in">
+  <div class="body">
+    <div class="glass">
+      <iframe src="04-models/fable-5-2/index.html" data-start="2" scrolling="no" title="Built by Claude Fable 5.2"></iframe>
+      <div class="island"></div>
+      <div class="status"><span>9:41</span>
+        <svg width="78" height="14" viewBox="0 0 78 14" fill="#fff"><rect x="0" y="9" width="3.4" height="5" rx="1"/><rect x="5.2" y="6.5" width="3.4" height="7.5" rx="1"/><rect x="10.4" y="3.5" width="3.4" height="10.5" rx="1"/><rect x="15.6" y="0" width="3.4" height="14" rx="1"/><path d="M33.5 3.2c2.6 0 5 1 6.8 2.7l1.2-1.3A11.6 11.6 0 0 0 33.5 1.4c-3 0-5.8 1.2-8 3.2l1.2 1.3a9.8 9.8 0 0 1 6.8-2.7Zm0 3.7c1.6 0 3.1.6 4.3 1.6l1.2-1.3a8.2 8.2 0 0 0-11 0l1.2 1.3a6.4 6.4 0 0 1 4.3-1.6Zm0 3.6c.8 0 1.5.3 2 .8l-2 2.2-2-2.2c.5-.5 1.2-.8 2-.8Z"/><rect x="48.5" y="1" width="25" height="12" rx="3.6" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="50.2" y="2.7" width="21.6" height="8.6" rx="2.2"/><rect x="74.8" y="4.8" width="2" height="4.4" rx="1" fill-opacity=".5"/></svg>
+      </div>
+      <div class="home"></div>
+    </div>
+  </div>
+</div>
+
+<div class="who b in">
+  <small>Claude</small>
+  <b class="serif">Fable 5.2</b>
+  <code class="mono">claude-fable-5-2</code>
+  <p>Same written brief.<br />One attempt.<br />Shown unedited.</p>
+</div>
+
+<p class="foot">The brief: a six-screen onboarding for a golden-hour planner, with GSAP, Motion and <b>gradients by f13s</b>.</p>
+
+<div class="end"><b class="serif">gradients <i>by f13s</i></b><span class="mono">gradients.f13s.com</span></div>
+
+<script>
+  // the walkthroughs start two seconds in and run for 24
+  const clock = document.getElementById("clock");
+  const began = performance.now();
+  setInterval(() => (clock.textContent = Math.min(24, Math.max(0, (performance.now() - began) / 1000 - 2)).toFixed(1).padStart(4, "0")), 50);
+</script>

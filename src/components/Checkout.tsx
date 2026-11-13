@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { PRICES } from "@/lib/pricing";
+import { discounted, money, PRICES } from "@/lib/pricing";
 import { useCurrency } from "./useCurrency";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -28,7 +28,7 @@ async function post(url: string, body: unknown) {
 }
 
 /** Pays for the lifetime licence through Razorpay Checkout, then confirms on the server before letting the buyer in. */
-export function Checkout({ next }: { next: string }) {
+export function Checkout({ next, code = "", percentOff = 0 }: { next: string; code?: string; percentOff?: number }) {
   const [currency] = useCurrency();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,7 +43,7 @@ export function Checkout({ next }: { next: string }) {
       setBusy(false);
       return setMessage("Could not load Razorpay. Check your connection, or turn off a blocker for checkout.razorpay.com.");
     }
-    const order = await post("/api/billing/order", { currency }).catch(() => ({ ok: false, data: { error: "Could not reach the server. Check your connection." } as Record<string, string | undefined> }));
+    const order = await post("/api/billing/order", { currency, ...(code ? { code } : {}) }).catch(() => ({ ok: false, data: { error: "Could not reach the server. Check your connection." } as Record<string, string | undefined> }));
     if (order.data.alreadyPaid) return location.assign(next);
     if (!order.ok) {
       setBusy(false);
@@ -74,7 +74,7 @@ export function Checkout({ next }: { next: string }) {
   return (
     <div className="space-y-3">
       <button type="button" className="btn btn-primary w-full py-3.5 text-base" disabled={busy || !currency} onClick={pay}>
-        {busy ? "Opening payment…" : `Pay ${PRICES[currency ?? "USD"].label} and open the studio`}
+        {busy ? "Opening payment…" : `Pay ${percentOff ? money(discounted(PRICES[currency ?? "USD"].amount, percentOff), currency ?? "USD") : PRICES[currency ?? "USD"].label} and open the studio`}
       </button>
       <p role="status" aria-live="polite" className="min-h-5 text-center text-sm text-white/70">{message}</p>
     </div>

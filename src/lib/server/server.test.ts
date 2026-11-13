@@ -63,3 +63,17 @@ test("prices: the server's table, whole units of the smallest coin, and the curr
   expect(guessCurrency("Asia/Calcutta")).toBe("INR");
   expect(guessCurrency("Europe/London")).toBe("USD");
 });
+
+test("coupon maths and code clean-up", async () => {
+  const { discounted, money, normalizeCode } = await import("../pricing");
+  expect(discounted(2500, 50)).toBe(1250);
+  expect(discounted(209900, 50)).toBe(104950);
+  expect(discounted(2500, 33)).toBe(1675);
+  expect(discounted(209900, 90)).toBe(20990);
+  expect(money(2500, "USD")).toBe("$25");
+  expect(money(1250, "USD")).toBe("$12.50");
+  expect(money(104950, "INR")).toBe("₹1,049.50");
+  expect(money(209900, "INR")).toBe("₹2,099");
+  expect(normalizeCode(" launch50 ")).toBe("LAUNCH50");
+  for (const bad of ["", "ab", "has space", "semi;colon", "x".repeat(33), "50%OFF", null, 50, "' or 1=1 --"]) expect(normalizeCode(bad)).toBe("");
+});

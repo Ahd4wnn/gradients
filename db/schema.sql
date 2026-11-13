@@ -45,3 +45,14 @@ create table if not exists mcp_usage (
   count integer not null default 0,
   primary key (user_id, month)
 );
+
+-- Coupon codes (managed with scripts/coupon.mjs). A use is counted when a purchase made with the code is paid.
+create table if not exists coupons (
+  code text primary key check (code = upper(code)),
+  percent_off integer not null check (percent_off between 1 and 90),
+  max_uses integer check (max_uses > 0),      -- null: no limit
+  uses integer not null default 0,
+  expires_at timestamptz,                     -- null: no expiry
+  created_at timestamptz not null default now()
+);
+alter table purchases add column if not exists coupon text references coupons(code);

@@ -1,14 +1,18 @@
-import { PRICES, type Currency } from "../pricing";
+import { discounted, PRICES, type Currency } from "../pricing";
+import type { Coupon } from "./coupon";
 import { db } from "./db";
 import { capturePayment, createOrder, getPayment, orderPayments, publicKeyId, type RzpPayment } from "./razorpay";
 
 type Purchase = { razorpay_order_id: string; amount: number; currency: string; status: string };
 
-/** Creates a Razorpay order for the lifetime licence and records it as pending. */
-export async function startCheckout(userId: string, currency: Currency) {
-  const { amount } = PRICES[currency];
-  const order = await createOrder(amount, currency, `gf_${Date.now().toString(36)}`, { user_id: userId, product: "lifetime" });
-  await db().query("insert into purchases (user_id, razorpay_order_id, amount, currency) values ($1, $2, $3, $4)", [userId, order.id, amount, currency]);
+/**
+ * Creates a Razorpay order for the lifetime licence and records it as pending. The amount is decided here, from the
+ * price table and a coupon the server has already looked up; nothing about the price comes from the browser.
+ */
+export async function startCheckout(userId: string, currency: Currency, coupon: Coupon | null = null) {
+  const amount = coupon ? discounted(PRICES[currency].amount, coupon.percentOff) : PRICES[currency].amount;
+  const order = await createOrder(amount, currency, `gf_${Date.now().toString(36)}`, { user_id: userId, product: "lifetime", ...(coupon ? { coupon: coupon.code } : {}) });
+  await db().query("insert into purchases (user_id, razorpay_order_id, amount, currency, coupon) values ($1, $2, $3, $4, $5)", [userId, order.id, amount, currency, coupon?.code ?? null]);
   return { orderId: order.id, amount, currency, keyId: publicKeyId() };
 }
 
@@ -21,7 +25,12 @@ async function settle(p: Purchase, payment: RzpPayment): Promise<boolean> {
   if (payment.order_id !== p.razorpay_order_id || payment.amount !== p.amount || payment.currency !== p.currency) return false;
   if (payment.status === "authorized") payment = await capturePayment(payment.id, p.amount, p.currency);
   if (payment.status !== "captured") return false;
-  await db().query("update purchases set status = 'paid', razorpay_payment_id = $2, paid_at = coalesce(paid_at, now()) where razorpay_order_id = $1", [p.razorpay_order_id, payment.id]);
+  // only the request that flips it to paid counts the coupon, so a webhook and a callback arriving together count it once
+  const { rows } = await db().query<{ coupon: string | null }>(
+    "update purchases set status = 'paid', razorpay_payment_id = $2, paid_at = now() where razorpay_order_id = $1 and status <> 'paid' returning coupon",
+    [p.razorpay_order_id, payment.id],
+  );
+  if (rows[0]?.coupon) await db().query("update coupons set uses = uses + 1 where code = $1", [rows[0].coupon]);
   return true;
 }
 

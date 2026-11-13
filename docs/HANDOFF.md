@@ -78,6 +78,7 @@ Three sub-projects, in order:
 | `docs/superpowers/plans/assets/wave-2-reference.jpg` | Contact sheet of what those eleven types looked like when prototyped. |
 | `docs/superpowers/plans/2026-11-13-cursor-effects.md` | Plan for opt-in cursor effects (liquid push, spotlight, colours follow). **Done.** |
 | `docs/superpowers/plans/assets/cursor-effects-reference.jpg` | Each effect at rest and with a cursor, from the prototype. |
+| `docs/DEPLOY.md` | Where the live site runs (https://gradients.f13s.com), how to deploy a new version, and what is not set up yet. |
 | `docs/research-part-2.md` | Competitor and Figma research; a prioritised list of studio features and extra layers. |
 
 ## State of the code

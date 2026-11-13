@@ -19,7 +19,7 @@ The `marketing-expert` agent reads this before writing anything and keeps it up 
 | Field | Value |
 |---|---|
 | Name | gradients by f13s |
-| Public URL | gradients.f13s.com |
+| Public URL | https://gradients.f13s.com (live since 2026-11-13) |
 | Price | $25 once, or ₹2,099 in India (`src/lib/pricing.ts`) |
 | Contact for business and refunds | business@f13s.com |
 | Launch date | ask |

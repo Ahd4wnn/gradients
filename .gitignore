@@ -49,3 +49,6 @@ playwright-report
 
 # Playwright session for the paid test account
 /e2e/.auth/
+
+# server details that should not be public
+docs/DEPLOY.private.md
